@@ -1,0 +1,20 @@
+# Ignore the Pokemon Cards CSS project directory
+pokemon-cards-css/
+
+# Ignore common files and folders
+node_modules/
+.DS_Store
+.env
+.vscode/
+.idea/
+
+# Ignore logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build files
+dist/
+build/

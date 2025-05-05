@@ -1,0 +1,478 @@
+/* Base card styles */
+.card {
+    position: relative;
+    width: 300px;
+    height: 420px;
+    border-radius: 15px;
+    transform-style: preserve-3d;
+    /* Default values for variables */
+    --pointer-x: 50%;
+    --pointer-y: 50%;
+    --pointer-from-center: 0;
+    --pointer-from-top: 0.5;
+    --pointer-from-left: 0.5;
+    --rotate-x: 0deg;
+    --rotate-y: 0deg;
+    transition: transform 0.2s cubic-bezier(0.13, 0.53, 0.38, 0.97);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    user-select: none;
+    will-change: transform;
+    animation: ambient-pulse 5s ease-in-out infinite;
+}
+
+.card:hover {
+    transition: all 0.05s ease;
+}
+
+.card-inner {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 15px;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    /* Use CSS variables for rotation - this will be set by JavaScript */
+    transform: rotateY(var(--rotate-x)) rotateX(var(--rotate-y));
+    transition: transform 0.15s cubic-bezier(0.13, 0.53, 0.38, 0.97);
+    will-change: transform;
+}
+
+.card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 15px;
+    overflow: hidden;
+    backface-visibility: hidden;
+}
+
+.card-image {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 15px;
+    z-index: 1;
+}
+
+/* Common holographic elements */
+.holo-overlay,
+.holo-sparkle,
+.holo-reflection,
+.holo-diffraction,
+.holo-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 15px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease-out, background-position 0.1s ease-out;
+    will-change: opacity, background-position, background-size;
+}
+
+/* Enhanced Standard Holo Effect - Base visible state */
+.effect-standard .holo-overlay {
+    /* Remove overlay effect by setting opacity to 0 */
+    opacity: 0;
+}
+
+.effect-standard .holo-reflection {
+    /* Remove reflection effect by setting opacity to 0 */
+    opacity: 0;
+}
+
+.effect-standard .holo-diffraction {
+    /* Remove diffraction effect by setting opacity to 0 */
+    opacity: 0;
+}
+
+.effect-standard .holo-glow {
+    /* Remove glow effect by setting opacity to 0 */
+    opacity: 0;
+}
+
+.effect-standard .holo-sparkle {
+    /* Remove sparkle effect by setting opacity to 0 */
+    opacity: 0;
+}
+
+/* Make sure even active states don't show the effects */
+.effect-standard.active .holo-overlay,
+.effect-standard.active .holo-reflection,
+.effect-standard.active .holo-diffraction,
+.effect-standard.active .holo-glow,
+.effect-standard.active .holo-sparkle {
+    opacity: 0;
+}
+
+/* Enhanced Galaxy Holo Effect - Base visible state */
+.effect-galaxy .holo-overlay {
+    background: 
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.3) 10%, rgba(255, 255, 255, 0) 45%),
+        radial-gradient(circle at 30% 40%, rgba(255, 215, 0, 0.2) 0%, rgba(255, 215, 0, 0) 50%),
+        radial-gradient(circle at 70% 60%, rgba(148, 0, 211, 0.2) 0%, rgba(148, 0, 211, 0) 50%);
+    mix-blend-mode: screen;
+    z-index: 10;
+    opacity: 0.15; /* Reduced opacity for the static overlay */
+    will-change: background-position;
+}
+
+.effect-galaxy .holo-sparkle {
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIHg9IjBweCIgeT0iMHB4IiB2aWV3Qm94PSIwIDAgNTAgNTAiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDUwIDUwOyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHN0eWxlIHR5cGU9InRleHQvY3NzIj4uc3RhcntmaWxsOmN1cnJlbnRDb2xvcjt9PC9zdHlsZT48cG9seWdvbiBjbGFzcz0ic3RhciIgcG9pbnRzPSIyNSwzOC44IDE0LjYsNDQuNSAxNi42LDMyLjYgOC4yLDI0LjQgMjAuMSwyMi42IDI1LDExLjcgMjkuOSwyMi42IDQxLjgsMjQuNCAzMy40LDMyLjYgMzUuNCw0NC41ICIvPjwvc3ZnPg==');
+    background-size: 5% 5%; /* Larger stars */
+    background-repeat: space;
+    mix-blend-mode: screen;
+    z-index: 11;
+    opacity: 0.35; /* Higher base opacity */
+    color: #f8e17a; /* Brighter gold color instead of default gold */
+    transition: color 0.3s ease;
+    filter: drop-shadow(0 0 5px rgba(255, 215, 55, 0.9)); /* Stronger gold glow */
+}
+
+.effect-galaxy.active .holo-sparkle {
+    opacity: 0.95; /* Higher active opacity */
+    animation: twinkle 3s ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+    0% {
+        filter: drop-shadow(0 0 3px rgba(255, 215, 55, 0.7));
+        opacity: 0.8;
+    }
+    50% {
+        filter: drop-shadow(0 0 8px rgba(255, 240, 100, 1));
+        opacity: 1;
+    }
+    100% {
+        filter: drop-shadow(0 0 5px rgba(255, 215, 55, 0.8));
+        opacity: 0.9;
+    }
+}
+
+.effect-galaxy .holo-diffraction {
+    background: 
+        radial-gradient(ellipse at 50% 50%, rgba(255, 215, 0, 0.2) 10%, rgba(255, 215, 0, 0) 60%),
+        radial-gradient(ellipse at 70% 30%, rgba(148, 0, 211, 0.3) 5%, rgba(148, 0, 211, 0) 60%),
+        radial-gradient(ellipse at 30% 70%, rgba(0, 191, 255, 0.3) 5%, rgba(0, 191, 255, 0) 60%);
+    mix-blend-mode: color-dodge;
+    z-index: 13;
+}
+
+.effect-galaxy .card-inner::before {
+    content: '';
+    position: absolute;
+    width: 150%;
+    height: 150%;
+    top: -25%;
+    left: -25%;
+    background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 5%, transparent 60%);
+    mix-blend-mode: screen;
+    opacity: 0.05; /* Significantly reduced opacity */
+    z-index: 9;
+    transition: opacity 0.15s ease-out;
+}
+
+.effect-galaxy.active .card-inner::before {
+    opacity: 0.2; /* Reduced opacity when active */
+    animation: galaxy-rotate 14s linear infinite;
+}
+
+@keyframes galaxy-rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Enhanced Radial Holo Effect - Base visible state */
+.effect-radial .holo-overlay {
+    background: conic-gradient(
+        from 0deg,
+        rgba(255, 0, 0, 0.2) 0deg,
+        rgba(255, 154, 0, 0.2) 36deg,
+        rgba(208, 222, 33, 0.2) 72deg,
+        rgba(79, 220, 74, 0.2) 108deg,
+        rgba(63, 218, 216, 0.2) 144deg,
+        rgba(47, 201, 226, 0.2) 180deg,
+        rgba(28, 127, 238, 0.2) 216deg,
+        rgba(95, 21, 242, 0.2) 252deg,
+        rgba(186, 12, 248, 0.2) 288deg,
+        rgba(251, 7, 217, 0.2) 324deg,
+        rgba(255, 0, 0, 0.2) 360deg
+    );
+    mix-blend-mode: color-dodge;
+    z-index: 10;
+    opacity: 0.25; /* Visible but subtle when not active */
+    animation: hue-rotate 8s linear infinite;
+}
+
+.effect-radial .holo-glow {
+    background: radial-gradient(
+        circle at 50% 50%, 
+        rgba(255,255,255,0.7) 0%, 
+        rgba(255,255,255,0.2) 35%, 
+        rgba(255,255,255,0) 70%
+    );
+    mix-blend-mode: overlay;
+    z-index: 14;
+}
+
+.effect-radial .holo-diffraction {
+    background: repeating-conic-gradient(
+        rgba(255, 255, 255, 0.05) 0deg,
+        rgba(255, 255, 255, 0) 2deg,
+        rgba(255, 255, 255, 0.05) 4deg
+    );
+    opacity: 0.3;
+    mix-blend-mode: overlay;
+    z-index: 13;
+}
+
+/* Enhanced Full Art Holo Effect - Base visible state */
+.effect-fullart .holo-overlay {
+    background: linear-gradient(
+        125deg,
+        rgba(255,255,255,0.2) 0%,
+        rgba(255,255,255,0.05) 10%,
+        rgba(255,0,0,0.07) 20%,
+        rgba(255,128,0,0.07) 30%,
+        rgba(255,255,0,0.07) 40%,
+        rgba(0,255,0,0.07) 50%,
+        rgba(0,255,255,0.07) 60%,
+        rgba(0,0,255,0.07) 70%,
+        rgba(255,0,255,0.07) 80%,
+        rgba(255,255,255,0.05) 90%,
+        rgba(255,255,255,0.2) 100%
+    );
+    background-size: 300% 300%;
+    mix-blend-mode: color-dodge;
+    z-index: 10;
+    opacity: 0.25; /* Visible but subtle when not active */
+    animation: fullArtShimmer 8s ease-in-out infinite alternate;
+}
+
+.effect-fullart.active .holo-overlay {
+    animation: fullArtShimmer 5s ease-in-out infinite alternate;
+}
+
+@keyframes fullArtShimmer {
+    0% {
+        background-position: 0% 0%;
+    }
+    100% {
+        background-position: 100% 100%;
+    }
+}
+
+.effect-fullart .holo-diffraction {
+    background: 
+        linear-gradient(
+            30deg,
+            rgba(255,255,255,0.2) 0%,
+            rgba(255,255,255,0) 30%,
+            rgba(255,255,255,0) 70%, 
+            rgba(255,255,255,0.2) 100%
+        ),
+        url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPgogIDxkZWZzPgogICAgPHBhdHRlcm4gaWQ9InBhdHRlcm4iIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CiAgICAgIDxyZWN0IHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgeD0iMCIgeT0iMCIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjAyIi8+CiAgICAgIDxyZWN0IHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgeD0iMTAiIHk9IjEwIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KICAgIDwvcGF0dGVybj4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNwYXR0ZXJuKSIgLz4KPC9zdmc+');
+    mix-blend-mode: overlay;
+    z-index: 13;
+}
+
+.effect-fullart .holo-glow {
+    background: radial-gradient(
+        ellipse at 50% 50%, 
+        rgba(255,255,255,0.6) 0%, 
+        rgba(255,255,255,0) 70%
+    );
+    mix-blend-mode: overlay;
+    z-index: 14;
+}
+
+/* Premium Holo Effect - Base visible state */
+.effect-premium .holo-overlay {
+    background: 
+        linear-gradient(
+            115deg,
+            transparent 20%,
+            rgba(255, 0, 0, 0.2) 30%, 
+            rgba(255, 165, 0, 0.2) 40%,
+            rgba(255, 255, 0, 0.2) 50%, 
+            rgba(0, 255, 0, 0.2) 60%,
+            rgba(0, 0, 255, 0.2) 70%,
+            rgba(139, 0, 255, 0.2) 80%,
+            transparent 90%
+        ),
+        radial-gradient(
+            circle at center,
+            rgba(255, 255, 255, 0.3) 0%,
+            rgba(255, 255, 255, 0) 60%
+        );
+    background-size: 200% 200%, 100% 100%;
+    background-position: 50% 50%;
+    mix-blend-mode: color-dodge;
+    z-index: 10;
+    opacity: 0.3; /* Visible but subtle when not active */
+    animation: premium-pulse 5s ease-in-out infinite alternate;
+}
+
+.effect-premium.active .holo-overlay {
+    animation: premium-pulse 5s ease-in-out infinite alternate;
+}
+
+@keyframes premium-pulse {
+    0%, 100% {
+        background-position: 0% 0%;
+        filter: brightness(1) saturate(1);
+    }
+    50% {
+        background-position: 100% 100%;
+        filter: brightness(1.2) saturate(1.2);
+    }
+}
+
+/* Removing stars from Premium Holo effect */
+.effect-premium .holo-sparkle {
+    display: none; /* Hide the sparkle element for premium effect */
+}
+
+.effect-premium.active .holo-sparkle {
+    display: none; /* Ensure sparkles stay hidden even when active */
+}
+
+/* Card info */
+.card-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0));
+    color: white;
+    z-index: 15;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+.card-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.card-rarity {
+    font-size: 0.9rem;
+    color: gold;
+    text-shadow: 0 0 5px rgba(255,215,0,0.7);
+}
+
+/* Interactive effects */
+.card.active .holo-overlay,
+.card.active .holo-reflection,
+.card.active .holo-diffraction,
+.card.active .holo-glow {
+    opacity: 0.8; /* Increase opacity when active */
+}
+
+.effect-galaxy.active .holo-sparkle {
+    opacity: 0.5; /* Increase opacity when active */
+}
+
+.card.active .holo-sparkle {
+    animation: sparkle 0.8s ease forwards;
+}
+
+/* Add a subtle ambient animation to all cards */
+@keyframes ambient-pulse {
+    0%, 100% {
+        filter: brightness(1) contrast(1);
+    }
+    50% {
+        filter: brightness(1.05) contrast(1.03);
+    }
+}
+
+/* Click animation styles */
+@keyframes sparkle {
+    0% {
+        background-size: 0% 0%;
+        opacity: 0.9;
+    }
+    100% {
+        background-size: 200% 200%;
+        opacity: 0;
+    }
+}
+
+/* Enhanced click animations */
+@keyframes sparkle-pop {
+    0% {
+        background-size: 0% 0%;
+        opacity: 0.9;
+        filter: brightness(1.5) contrast(1.2);
+    }
+    50% {
+        background-size: 150% 150%;
+        opacity: 0.8;
+        filter: brightness(1.8) contrast(1.4);
+    }
+    100% {
+        background-size: 300% 300%;
+        opacity: 0;
+        filter: brightness(1) contrast(1);
+    }
+}
+
+@keyframes sparkle-return {
+    0% {
+        background-size: 0% 0%;
+        opacity: 0.7;
+        filter: brightness(1.2) contrast(1.1);
+    }
+    100% {
+        background-size: 200% 200%;
+        opacity: 0;
+        filter: brightness(1) contrast(1);
+    }
+}
+
+/* Popped card styles */
+.card.popped {
+    z-index: 1000;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+    will-change: transform;
+}
+
+.card-popped::before {
+    /* Removed background overlay */
+    content: none; /* Prevents the pseudo-element from being created */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Removed background-color: rgba(0, 0, 0, 0.7); */
+    z-index: 999;
+    animation: none; /* Removed fade-in animation */
+}
+
+/* Enhanced effects for premium cards when popped */
+.effect-premium.popped .holo-overlay {
+    animation: premium-pulse-popped 3s ease-in-out infinite alternate;
+}
+
+@keyframes premium-pulse-popped {
+    0%, 100% {
+        background-position: 0% 0%;
+        filter: brightness(1.2) saturate(1.3);
+    }
+    50% {
+        background-position: 100% 100%;
+        filter: brightness(1.4) saturate(1.5);
+    }
+}
