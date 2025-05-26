@@ -101,11 +101,9 @@ class HolographicEffect {
         PERSPECTIVE: {
             DEFAULT: 1500,
             ACTIVE: 1800
-        },
-        SCALE: {
+        },        SCALE: {
             DEFAULT: 1.0,
-            ACTIVE: 1.03,
-            POPOVER: 1.75  // Scale factor for popped-up cards
+            ACTIVE: 1.03
         },
         TRANSITION: {
             DEFAULT: 'transform 0.2s cubic-bezier(0.13, 0.53, 0.38, 0.97)',
@@ -124,15 +122,11 @@ class HolographicEffect {
         CLEANUP: {
             GALAXY_DELAY: 100,
             STYLE_REMOVAL_DELAY: 50
-        },
-        SPRING: {
+        },        SPRING: {
             INTERACT: { stiffness: 0.066, damping: 0.25 },
-            SNAP: { stiffness: 0.01, damping: 0.06 },
-            POPOVER: { stiffness: 0.033, damping: 0.45 }  // Spring settings for popover animation
+            SNAP: { stiffness: 0.01, damping: 0.06 }
         }
-    };
-
-    constructor(card, effectType = 'standard') {
+    };    constructor(card, effectType = 'standard') {
         this.card = card;
         this.inner = card.querySelector('.card-inner');
         this.overlay = card.querySelector('.holo-overlay');
@@ -142,9 +136,6 @@ class HolographicEffect {
         this.sparkle = card.querySelector('.holo-sparkle');
         
         this.timeoutIds = [];
-        this.isPopped = false;
-        this.hasBeenPopped = false;
-        this.originalPosition = null;
         
         // Add overlay styles to ensure it doesn't block interactions
         this.ensureOverlayStyles();
@@ -161,25 +152,18 @@ class HolographicEffect {
         
         this.setupEventListeners();
     }
-    
-    ensureOverlayStyles() {
+      ensureOverlayStyles() {
         // Add custom styles to ensure overlays don't block interactions
         const overlayStyle = this.ensureCleanupStyle('overlay-interaction-fix', `
-            .card-popped::before {
-                pointer-events: none !important;
-            }
-            .card.popped {
+            .card {
                 pointer-events: auto !important;
-                z-index: 1001 !important;
             }
         `);
     }
-    
-    setupEventListeners() {
+      setupEventListeners() {
         this.card.addEventListener('mouseenter', () => this.activateCard());
         this.card.addEventListener('mouseleave', () => this.deactivateCard());
         this.card.addEventListener('mousemove', (e) => this.moveCard(e));
-        this.card.addEventListener('click', (e) => this.handleCardClick(e));
         
         this.card.addEventListener('touchstart', (e) => {
             e.preventDefault();
@@ -403,11 +387,7 @@ class HolographicEffect {
             }
         }, 500);
     }
-    
-    moveCard(e) {
-        // Skip mouse movement effects if the card is in popped state
-        if (this.isPopped) return;
-        
+      moveCard(e) {
         if (!this.card.classList.contains('active')) return;
         
         const rect = this.card.getBoundingClientRect();
@@ -528,265 +508,7 @@ class HolographicEffect {
             this.updateGalaxyEffect(glare.x, glare.y);
         }
     }
-    
-    sparkleEffect(e) {
-        if (!this.sparkle) return;
-        
-        this.sparkle.style.animation = 'none';
-        this.triggerReflow([this.sparkle]);
-        
-        const rect = this.card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        this.sparkle.style.backgroundPosition = `${x}px ${y}px`;
-        this.sparkle.style.animation = 'sparkle 0.8s ease forwards';
-    }
-    
-    setCenter() {
-        const rect = this.card.getBoundingClientRect();
-        const viewWidth = document.documentElement.clientWidth;
-        const viewHeight = document.documentElement.clientHeight;
-        
-        const deltaX = Math.round(viewWidth / 2 - rect.x - rect.width / 2);
-        const deltaY = Math.round(viewHeight / 2 - rect.y - rect.height / 2);
-        
-        this.translateCard(deltaX, deltaY);
-    }
-    
-    translateCard(x, y) {
-        if (!this.card) return;
-        
-        if (!this.springs.translate) {
-            this.springs.translate = new Spring({ x: 0, y: 0 }, HolographicEffect.CONFIG.SPRING.POPOVER);
-        }
-        
-        this.springs.translate.set({ x, y });
-        
-        const applyTranslation = () => {
-            if (!this.springs.translate.animating) {
-                cancelAnimationFrame(this._translateFrameId);
-                this._translateFrameId = null;
-                return;
-            }
-            
-            const translate = this.springs.translate.value;
-            this.card.style.transform = `translate3d(${translate.x}px, ${translate.y}px, 0.1px) ${this.card.style.transform.replace(/translate3d\([^)]+\)/g, '')}`;
-            
-            this._translateFrameId = requestAnimationFrame(applyTranslation);
-        };
-        
-        if (!this._translateFrameId) {
-            this._translateFrameId = requestAnimationFrame(applyTranslation);
-        }
-    }
-    
-    popCard() {
-        if (this.isPopped) return;
-        
-        this.isPopped = true;
-        this.card.classList.add('popped');
-        
-        // Save current position
-        this.originalPosition = {
-            left: this.card.style.left,
-            top: this.card.style.top,
-            zIndex: this.card.style.zIndex,
-            transform: this.card.style.transform
-        };
-        
-        // Set card to highest z-index
-        this.card.style.zIndex = '1000';
-        
-        // Prepare for animation
-        document.body.classList.add('card-popped');
-        
-        // Center the card on screen with improved animation
-        this.centerCardOnScreen();
-        
-        // Add enhanced sparkle effect
-        if (this.sparkle) {
-            this.sparkle.style.animation = 'sparkle-pop 1.2s ease-out forwards';
-        }
-        
-        // Apply a 360-degree rotation animation for first pop
-        if (!this.hasBeenPopped) {
-            // Create spring for rotation animation if it doesn't exist
-            if (!this.springs.rotateFlip) {
-                this.springs.rotateFlip = new Spring({ x: 0, y: 0 }, HolographicEffect.CONFIG.SPRING.POPOVER);
-            }
-            
-            // Configure the spring for a smooth rotation
-            Object.assign(this.springs.rotateFlip.config, {
-                stiffness: 0.025,
-                damping: 0.5
-            });
-            
-            // Set target rotation (full flip on Y axis)
-            this.springs.rotateFlip.set({ x: 0, y: 360 });
-            
-            // Apply the rotation animation
-            const applyRotation = () => {
-                if (!this.springs.rotateFlip.animating) {
-                    cancelAnimationFrame(this._rotateFrameId);
-                    this._rotateFrameId = null;
-                    return;
-                }
-                
-                const rotate = this.springs.rotateFlip.value;
-                this.card.style.transform = `
-                    perspective(${HolographicEffect.CONFIG.PERSPECTIVE.ACTIVE}px)
-                    translate3d(${this._centerDeltaX || 0}px, ${this._centerDeltaY || 0}px, 50px)
-                    rotateY(${rotate.y}deg)
-                    scale(${HolographicEffect.CONFIG.SCALE.POPOVER})
-                `;
-                
-                this._rotateFrameId = requestAnimationFrame(applyRotation);
-            };
-            
-            if (!this._rotateFrameId) {
-                this._rotateFrameId = requestAnimationFrame(applyRotation);
-            }
-            
-            this.hasBeenPopped = true;
-        } else {
-            // For subsequent pops, just use a simple scaling effect
-            this.card.style.transform = `
-                perspective(${HolographicEffect.CONFIG.PERSPECTIVE.ACTIVE}px)
-                translate3d(${this._centerDeltaX || 0}px, ${this._centerDeltaY || 0}px, 50px)
-                scale(${HolographicEffect.CONFIG.SCALE.POPOVER})
-            `;
-        }
-        
-        // Add event listener to close card when clicking outside
-        // But with a slight delay to prevent immediate closing
-        if (this._closeOnClickOutside) {
-            document.removeEventListener('click', this._closeOnClickOutside);
-        }
-        
-        this.setManagedTimeout(() => {
-            this._closeOnClickOutside = (e) => {
-                if (!this.card.contains(e.target) && this.isPopped) {
-                    this.unpopCard();
-                }
-            };
-            document.addEventListener('click', this._closeOnClickOutside);
-        }, 500); // Short delay to prevent immediate closing
-    }
-    
-    unpopCard() {
-        if (!this.isPopped) return;
-        
-        this.isPopped = false;
-        this.card.classList.remove('popped');
-        
-        // Remove the overlay background
-        document.body.classList.remove('card-popped');
-        
-        // Remove click outside listener if it exists
-        if (this._closeOnClickOutside) {
-            document.removeEventListener('click', this._closeOnClickOutside);
-            this._closeOnClickOutside = null;
-        }
-        
-        // Reset the hasBeenPopped flag to allow the popup animation to play again
-        this.hasBeenPopped = false;
-        
-        // Create a smooth animation to return to original position
-        if (!this.springs.returnTransform) {
-            this.springs.returnTransform = new Spring({ 
-                x: 0, 
-                y: 0, 
-                scale: HolographicEffect.CONFIG.SCALE.POPOVER 
-            }, HolographicEffect.CONFIG.SPRING.POPOVER);
-        }
-        
-        // Configure return transform spring with faster settings
-        Object.assign(this.springs.returnTransform.config, {
-            stiffness: 0.07,  // Increased from 0.03 for faster animation
-            damping: 0.55     // Adjusted for smoother return
-        });
-        
-        // Set target to default scale
-        this.springs.returnTransform.set({ 
-            x: 0, 
-            y: 0, 
-            scale: HolographicEffect.CONFIG.SCALE.DEFAULT 
-        });
-        
-        // Apply the return animation
-        const applyReturnAnimation = () => {
-            if (!this.springs.returnTransform.animating) {
-                cancelAnimationFrame(this._returnFrameId);
-                this._returnFrameId = null;
-                
-                // When animation completes, reset the card's styles
-                if (this.originalPosition) {
-                    this.card.style.left = this.originalPosition.left;
-                    this.card.style.top = this.originalPosition.top;
-                    this.card.style.zIndex = this.originalPosition.zIndex || '';
-                    this.card.style.transform = this.originalPosition.transform || '';
-                }
-                
-                // Ensure the card is ready for new interactions
-                this.activateCard();
-                
-                return;
-            }
-            
-            const returnValues = this.springs.returnTransform.value;
-            
-            // Apply the animated transform
-            this.card.style.transform = `
-                perspective(${HolographicEffect.CONFIG.PERSPECTIVE.DEFAULT}px)
-                translate3d(${returnValues.x}px, ${returnValues.y}px, 0px)
-                scale(${returnValues.scale})
-            `;
-            
-            this._returnFrameId = requestAnimationFrame(applyReturnAnimation);
-        };
-        
-        if (!this._returnFrameId) {
-            this._returnFrameId = requestAnimationFrame(applyReturnAnimation);
-        }
-        
-        // Reset spring to normal interaction mode immediately
-        Object.assign(this.springs.rotate.config, HolographicEffect.CONFIG.SPRING.INTERACT);
-    }
-    
-    centerCardOnScreen() {
-        const rect = this.card.getBoundingClientRect();
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        
-        // Store these values for use in animations
-        this._centerDeltaX = Math.round(viewportWidth / 2 - rect.left - rect.width / 2);
-        this._centerDeltaY = Math.round(viewportHeight / 2 - rect.top - rect.height / 2);
-        
-        this.card.style.transition = HolographicEffect.CONFIG.TRANSITION.SPRING;
-        this.card.style.transform = `
-            perspective(${HolographicEffect.CONFIG.PERSPECTIVE.ACTIVE}px)
-            translate3d(${this._centerDeltaX}px, ${this._centerDeltaY}px, 0.1px)
-            scale(${HolographicEffect.CONFIG.SCALE.POPOVER})
-        `;
-    }
-    
-    handleCardClick(e) {
-        // Prevent event bubbling to avoid triggering other elements
-        e.stopPropagation();
-        
-        // First trigger the sparkle effect
-        this.sparkleEffect(e);
-        
-        // Then handle the popover animation
-        if (this.isPopped) {
-            this.unpopCard();
-        } else {
-            this.popCard();
-        }
-    }
-    
-    updateGalaxyEffect(x, y) {
+      updateGalaxyEffect(x, y) {
         if (!this.overlay) return;
         
         // Calculate positions for the gradients based on mouse position
@@ -820,18 +542,11 @@ class HolographicEffect {
             this.sparkle.style.filter = `drop-shadow(0 0 3px hsla(${hue}, ${saturation}%, ${lightness}%, 0.8))`;
         }
     }
-    
-    destroy() {
-        // Clean up any popped card state
-        if (this.isPopped) {
-            this.unpopCard();
-        }
-        
+      destroy() {
         // Properly remove event listeners by using stored function references
         this._activateCardHandler = this._activateCardHandler || (() => this.activateCard());
         this._deactivateCardHandler = this._deactivateCardHandler || (() => this.deactivateCard());
         this._moveCardHandler = this._moveCardHandler || ((e) => this.moveCard(e));
-        this._handleCardClickHandler = this._handleCardClickHandler || ((e) => this.handleCardClick(e));
         this._touchStartHandler = this._touchStartHandler || ((e) => { e.preventDefault(); this.activateCard(); });
         this._touchEndHandler = this._touchEndHandler || (() => this.deactivateCard());
         this._touchMoveHandler = this._touchMoveHandler || ((e) => {
@@ -850,41 +565,14 @@ class HolographicEffect {
         this.card.removeEventListener('mouseenter', this._activateCardHandler);
         this.card.removeEventListener('mouseleave', this._deactivateCardHandler);
         this.card.removeEventListener('mousemove', this._moveCardHandler);
-        this.card.removeEventListener('click', this._handleCardClickHandler);
         this.card.removeEventListener('touchstart', this._touchStartHandler);
         this.card.removeEventListener('touchend', this._touchEndHandler);
         this.card.removeEventListener('touchmove', this._touchMoveHandler);
-        
-        // Remove click outside listener if it exists
-        if (this._closeOnClickOutside) {
-            document.removeEventListener('click', this._closeOnClickOutside);
-            this._closeOnClickOutside = null;
-        }
         
         // Cancel all animation frames
         if (this.animationFrameId) {
             cancelAnimationFrame(this.animationFrameId);
             this.animationFrameId = null;
-        }
-        
-        if (this._translateFrameId) {
-            cancelAnimationFrame(this._translateFrameId);
-            this._translateFrameId = null;
-        }
-        
-        if (this._scaleFrameId) {
-            cancelAnimationFrame(this._scaleFrameId);
-            this._scaleFrameId = null;
-        }
-        
-        if (this._rotateFrameId) {
-            cancelAnimationFrame(this._rotateFrameId);
-            this._rotateFrameId = null;
-        }
-        
-        if (this._returnFrameId) {
-            cancelAnimationFrame(this._returnFrameId);
-            this._returnFrameId = null;
         }
         
         // Clear all timeouts
@@ -901,7 +589,6 @@ class HolographicEffect {
         
         // Clear references
         this.springs = null;
-        this.originalPosition = null;
     }
 }
 

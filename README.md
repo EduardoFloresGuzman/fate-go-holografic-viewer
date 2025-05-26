@@ -9,7 +9,6 @@ An interactive web application that displays Fate/Grand Order servant cards with
 - **Interactive Holographic Cards**: Realistic physics-based movement that responds to mouse position
 - **Spring Physics Animation**: Fluid, natural card movement with configurable physics parameters
 - **Multiple Effect Types**: Various holographic effects including standard, galaxy, radial, and more
-- **Card Pop Animation**: Click on cards to view them in a larger, centered format
 - **Touch Support**: Full mobile/touch device compatibility
 - **Customizable Settings**: Easily configure animation parameters and visual effects
 
@@ -31,7 +30,7 @@ The holographic effect is achieved through a combination of:
 
 ## Usage
 
-Simply hover over any servant card to see the holographic effect in action. Click on a card to expand it to a larger view. Different servant cards have different holographic effects based on their rarity and type.
+Simply hover over any servant card to see the holographic effect in action. Different servant cards have different holographic effects based on their rarity and type.
 
 ## Credits
 
