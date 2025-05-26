@@ -470,15 +470,17 @@ class HolographicEffect {
 
 // Card Factory for creating holographic cards
 class CardFactory {
-    static createCard(servantData, effectType = 'premium') {
+    static async createCard(servantData, effectType = 'premium') {
         const card = document.createElement('div');
-        card.className = `card effect-premium`;
+        card.className = `card effect-${effectType}`;
         card.dataset.id = servantData.id;
         
+        // Create base card structure
         card.innerHTML = `
             <div class="card-inner">
                 <div class="card-face">
                     <img class="card-image" src="${servantData.imageURL}" alt="${servantData.name}">
+                    <div class="character-layer"></div>
                     <div class="holo-overlay"></div>
                     <div class="holo-sparkle"></div>
                     <div class="holo-reflection"></div>
@@ -492,10 +494,69 @@ class CardFactory {
             </div>
         `;
         
-        const effect = new HolographicEffect(card, effectType);
+        // For masked effects, process the image
+        if (effectType.includes('masked')) {
+            try {
+                await this.applyImageMasking(card, servantData.imageURL);
+            } catch (error) {
+                console.error('Error applying image masking:', error);
+                // Fallback to regular effect if masking fails
+                card.className = `card effect-premium`;
+            }
+        }
         
+        const effect = new HolographicEffect(card, effectType);
         card.holoEffect = effect;
         
         return card;
+    }
+    
+    static async applyImageMasking(card, imageURL) {
+        // Process the image to create character and background masks
+        const processedImage = await ImageProcessor.processCardImage(imageURL, {
+            threshold: 0.15,
+            blurRadius: 2,
+            dilateSize: 4,
+            featherEdge: 6
+        });
+        
+        if (!processedImage) {
+            throw new Error('Failed to process image');
+        }
+        
+        const { characterMask, backgroundMask, dimensions } = processedImage;
+        
+        // Create mask data URLs
+        const characterMaskURL = ImageProcessor.createMaskDataURL(
+            characterMask, dimensions.width, dimensions.height
+        );
+        const backgroundMaskURL = ImageProcessor.createMaskDataURL(
+            backgroundMask, dimensions.width, dimensions.height
+        );
+        
+        // Apply masks to respective elements
+        const characterLayer = card.querySelector('.character-layer');
+        const holoOverlay = card.querySelector('.holo-overlay');
+        const holoReflection = card.querySelector('.holo-reflection');
+        const holoGlow = card.querySelector('.holo-glow');
+        
+        if (characterLayer) {
+            // Character layer shows original image with character mask
+            characterLayer.style.backgroundImage = `url(${imageURL})`;
+            characterLayer.style.webkitMaskImage = `url(${characterMaskURL})`;
+            characterLayer.style.maskImage = `url(${characterMaskURL})`;
+        }
+        
+        // Apply background mask to holographic effects
+        [holoOverlay, holoReflection, holoGlow].forEach(element => {
+            if (element) {
+                element.style.webkitMaskImage = `url(${backgroundMaskURL})`;
+                element.style.maskImage = `url(${backgroundMaskURL})`;
+            }
+        });
+        
+        // Store masks for potential future use
+        card.dataset.characterMask = characterMaskURL;
+        card.dataset.backgroundMask = backgroundMaskURL;
     }
 }

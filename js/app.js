@@ -44,34 +44,46 @@ document.addEventListener('DOMContentLoaded', async function() {
             showError('Failed to initialize the app. Please try again.');
         }
     };
-    
-    // Render cards in the container
-    const renderCards = () => {
+      // Render cards in the container
+    const renderCards = async () => {
         // Clear the container and card elements array
         cardContainer.innerHTML = '';
         cardElements = [];
         
+        // Show loading indicator
+        cardContainer.innerHTML = '<div class="loading">Processing card images...</div>';
+        
         // Create and append all cards
-        servants.forEach(servant => {
-            const card = CardFactory.createCard(servant, currentEffect);
+        for (const servant of servants) {
+            const card = await CardFactory.createCard(servant, currentEffect);
             cardContainer.appendChild(card);
             cardElements.push(card);
-        });
+        }
+        
+        // Remove loading indicator
+        const loading = cardContainer.querySelector('.loading');
+        if (loading) {
+            loading.remove();
+        }
     };
-    
-    // Handle effect type change from the selector
-    const handleEffectChange = (e) => {
+      // Handle effect type change from the selector
+    const handleEffectChange = async (e) => {
         currentEffect = e.target.value;
         
         // Save preference for next time
         localStorage.setItem('preferredEffect', currentEffect);
         
-        // Update all existing cards with the new effect
-        cardElements.forEach(card => {
-            if (card.holoEffect) {
-                card.holoEffect.setEffectType(currentEffect);
-            }
-        });
+        // For masked effects, we need to recreate cards due to image processing
+        if (currentEffect.includes('masked') || cardElements.some(card => card.className.includes('masked'))) {
+            await renderCards();
+        } else {
+            // Update all existing cards with the new effect
+            cardElements.forEach(card => {
+                if (card.holoEffect) {
+                    card.holoEffect.setEffectType(currentEffect);
+                }
+            });
+        }
     };
     
     // Show error message

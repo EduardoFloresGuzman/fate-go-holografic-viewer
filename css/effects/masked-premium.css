@@ -1,0 +1,159 @@
+/*
+  MASKED PREMIUM HOLO EFFECT
+  Applies holographic effect only to background, keeping character on top
+*/
+
+.effect-masked-premium .holo-overlay {
+    /* Enhanced smooth background with better gradients */
+    background: 
+        linear-gradient(
+            115deg,
+            transparent 15%,
+            rgba(255, 0, 0, 0.2) 25%, 
+            rgba(255, 165, 0, 0.2) 35%,
+            rgba(255, 255, 0, 0.2) 45%, 
+            rgba(0, 255, 0, 0.2) 55%,
+            rgba(0, 0, 255, 0.2) 65%,
+            rgba(139, 0, 255, 0.2) 75%,
+            transparent 85%
+        ),
+        radial-gradient(
+            ellipse at 40% 30%,
+            rgba(255, 255, 255, 0.3) 0%,
+            rgba(255, 255, 255, 0.15) 40%,
+            rgba(255, 255, 255, 0) 70%
+        ),
+        radial-gradient(
+            ellipse at 60% 70%,
+            rgba(255, 255, 255, 0.25) 0%,
+            rgba(255, 255, 255, 0.1) 30%,
+            rgba(255, 255, 255, 0) 60%
+        );
+    background-size: 250% 250%, 150% 150%, 120% 120%;
+    background-position: 50% 50%, 40% 30%, 60% 70%;
+    mix-blend-mode: color-dodge;
+    z-index: 10;
+    opacity: 0.5;
+    animation: masked-premium-pulse 6s ease-in-out infinite alternate;
+      /* Smoother mask transitions with additional filtering */
+    -webkit-mask-image: none;
+    mask-image: none;
+    -webkit-mask-size: cover;
+    mask-size: cover;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;    filter: blur(0.5px) brightness(1.1); /* Enhanced filtering for smoother appearance */
+}
+
+.effect-masked-premium.active .holo-overlay {
+    animation: masked-premium-pulse 5s ease-in-out infinite alternate;
+    opacity: 0.6;
+    filter: brightness(1.2) saturate(1.2);
+}
+
+@keyframes masked-premium-pulse {
+    0%, 100% {
+        background-position: 0% 0%, 40% 30%, 60% 70%;
+        filter: brightness(1) saturate(1) blur(0.5px);
+    }
+    50% {
+        background-position: 100% 100%, 50% 40%, 70% 60%;
+        filter: brightness(1.2) saturate(1.2) blur(0.3px);
+    }
+}
+
+/* Enhanced reflection for background-only effect */
+.effect-masked-premium .holo-reflection {
+    background: 
+        radial-gradient(
+            circle at var(--pointer-x, 50%) var(--pointer-y, 50%),
+            rgba(255, 255, 255, 0.6) 0%,
+            rgba(255, 255, 255, 0.2) 30%,
+            rgba(255, 255, 255, 0) 60%
+        );
+    background-size: 150% 150%;
+    background-position: var(--pointer-x, 50%) var(--pointer-y, 50%);
+    mix-blend-mode: overlay;
+    opacity: 0.4;
+    z-index: 11;
+    
+    /* Mask will be applied dynamically via JavaScript */
+    -webkit-mask-image: none;
+    mask-image: none;
+    -webkit-mask-size: cover;
+    mask-size: cover;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+}
+
+/* Character overlay layer - shows only the character */
+.effect-masked-premium .character-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 15px;
+    z-index: 12;
+    pointer-events: none;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    
+    /* Character mask will be applied dynamically */
+    -webkit-mask-image: none;
+    mask-image: none;
+    -webkit-mask-size: cover;
+    mask-size: cover;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+}
+
+/* Subtle character enhancement */
+.effect-masked-premium .character-layer {
+    filter: contrast(1.08) brightness(1.03) saturate(1.08);
+    transition: filter 0.3s ease, transform 0.3s ease;
+}
+
+.effect-masked-premium.active .character-layer {
+    filter: contrast(1.12) brightness(1.06) saturate(1.12);
+    transform: scale(1.005);
+    transition: filter 0.3s ease, transform 0.3s ease;
+}
+
+/* Disable other effects for clean masked appearance */
+.effect-masked-premium .holo-sparkle,
+.effect-masked-premium .holo-diffraction {
+    display: none;
+}
+
+/* Enhanced glow that respects the mask */
+.effect-masked-premium .holo-glow {
+    background: 
+        radial-gradient(
+            circle at var(--pointer-x, 50%) var(--pointer-y, 50%),
+            rgba(255, 255, 255, 0.4) 0%,
+            rgba(255, 255, 255, 0.2) 25%,
+            rgba(255, 255, 255, 0) 50%
+        );
+    background-size: 120% 120%;
+    background-position: var(--pointer-x, 50%) var(--pointer-y, 50%);
+    mix-blend-mode: soft-light;
+    opacity: 0.5;
+    z-index: 9;
+    
+    /* Background mask will be applied dynamically */
+    -webkit-mask-image: none;
+    mask-image: none;
+    -webkit-mask-size: cover;
+    mask-size: cover;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+}
