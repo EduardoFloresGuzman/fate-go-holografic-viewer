@@ -126,7 +126,7 @@ class HolographicEffect {
             INTERACT: { stiffness: 0.066, damping: 0.25 },
             SNAP: { stiffness: 0.01, damping: 0.06 }
         }
-    };    constructor(card, effectType = 'standard') {
+    };    constructor(card, effectType = 'premium') {
         this.card = card;
         this.inner = card.querySelector('.card-inner');
         this.overlay = card.querySelector('.holo-overlay');
@@ -159,33 +159,12 @@ class HolographicEffect {
                 pointer-events: auto !important;
             }
         `);
-    }
-      setupEventListeners() {
+    }    setupEventListeners() {
         this.card.addEventListener('mouseenter', () => this.activateCard());
         this.card.addEventListener('mouseleave', () => this.deactivateCard());
         this.card.addEventListener('mousemove', (e) => this.moveCard(e));
         
-        this.card.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            this.activateCard();
-        });
-        
-        this.card.addEventListener('touchend', () => {
-            this.deactivateCard();
-        });
-        
-        this.card.addEventListener('touchmove', (e) => {
-            if (e.touches.length > 0) {
-                e.preventDefault();
-                const touch = e.touches[0];
-                this.moveCard({
-                    type: 'touchmove',
-                    touches: e.touches,
-                    clientX: touch.clientX,
-                    clientY: touch.clientY
-                });
-            }
-        });
+        // Touch events removed - no more click/touch activation
     }
     
     setManagedTimeout(callback, delay) {
@@ -210,44 +189,14 @@ class HolographicEffect {
         document.head.appendChild(styleElement);
         
         return styleElement;
-    }
-    
-    setEffectType(effectType) {
+    }      setEffectType(effectType) {
         this.resetElements();
         
-        this.card.classList.remove(
-            'effect-standard', 
-            'effect-galaxy', 
-            'effect-radial', 
-            'effect-fullart',
-            'effect-premium'
-        );
+        // Remove any existing effect classes
+        this.card.classList.remove('effect-premium');
         
-        const galaxyCleanupStyle = this.ensureCleanupStyle('galaxy-cleanup-style', `
-            .card-inner::before {
-                opacity: 0 !important;
-                animation: none !important;
-                background: none !important;
-                filter: none !important;
-            }
-            .holo-sparkle {
-                color: initial !important;
-                filter: none !important;
-            }
-            .holo-overlay {
-                background: initial !important;
-            }
-        `);
-        
-        this.triggerReflow([this.inner, this.overlay, this.sparkle]);
-        
-        this.setManagedTimeout(() => {
-            if (document.head.contains(galaxyCleanupStyle)) {
-                document.head.removeChild(galaxyCleanupStyle);
-            }
-        }, HolographicEffect.CONFIG.CLEANUP.GALAXY_DELAY);
-        
-        this.card.classList.add(`effect-${effectType}`);
+        // Always set to premium effect
+        this.card.classList.add('effect-premium');
         
         this.restartAnimations();
     }
@@ -319,27 +268,13 @@ class HolographicEffect {
             }
         }, HolographicEffect.CONFIG.CLEANUP.STYLE_REMOVAL_DELAY);
     }
-    
-    restartAnimations() {
+      restartAnimations() {
         this.setManagedTimeout(() => {
             if (this.overlay) this.overlay.style.animation = '';
             if (this.reflection) this.reflection.style.animation = '';
             if (this.diffraction) this.diffraction.style.animation = '';
             if (this.glow) this.glow.style.animation = '';
             if (this.sparkle) this.sparkle.style.animation = '';
-            
-            if (this.card.classList.contains('effect-galaxy') && this.inner) {
-                const galaxyAnimStyle = this.ensureCleanupStyle('galaxy-animation-style', `
-                    .effect-galaxy.active .card-inner::before {
-                        opacity: 1;
-                        animation: galaxy-rotate 14s linear infinite;
-                    }
-                `);
-            }
-            
-            if (this.card.classList.contains('effect-premium') && this.sparkle) {
-                this.sparkle.style.animation = 'sparkle-premium 7s linear infinite';
-            }
         }, HolographicEffect.CONFIG.CLEANUP.STYLE_REMOVAL_DELAY);
     }
     
@@ -458,8 +393,7 @@ class HolographicEffect {
             this.animationFrameId = null;
         }
     }
-    
-    updateCardTransform() {
+      updateCardTransform() {
         const rotate = this.springs.rotate.value;
         const glare = this.springs.glare.value;
         const background = this.springs.background.value;
@@ -477,14 +411,9 @@ class HolographicEffect {
             this.inner.style.transform = `rotateX(${innerFactorX}deg) rotateY(${innerFactorY}deg)`;
         }
         
-        if (this.card.classList.contains('effect-standard')) {
-            return;
-        }
-        
         this.applyVisualEffects(glare, background);
     }
-    
-    applyVisualEffects(glare, background) {
+      applyVisualEffects(glare, background) {
         if (this.reflection) {
             const multiplier = HolographicEffect.CONFIG.REFLECTION.POSITION_MULTIPLIER;
             const posX = background.x * (multiplier / 100);
@@ -503,71 +432,18 @@ class HolographicEffect {
                 rgba(255, 255, 255, 0) ${glowSize}%
             )`;
         }
-        
-        if (this.card.classList.contains('effect-galaxy')) {
-            this.updateGalaxyEffect(glare.x, glare.y);
-        }
-    }
-      updateGalaxyEffect(x, y) {
-        if (!this.overlay) return;
-        
-        // Calculate positions for the gradients based on mouse position
-        const mainPosX = x;
-        const mainPosY = y;
-        
-        // Create offset positions for secondary gradients
-        const gradPos1X = Math.min(100, Math.max(0, mainPosX - 20));
-        const gradPos1Y = Math.min(100, Math.max(0, mainPosY - 10));
-        const gradPos2X = Math.min(100, Math.max(0, mainPosX + 20));
-        const gradPos2Y = Math.min(100, Math.max(0, mainPosY + 10));
-        
-        // Apply the background with mouse-following gradients
-        this.overlay.style.background = `
-            radial-gradient(circle at ${mainPosX}% ${mainPosY}%, rgba(255, 255, 255, 0.3) 10%, rgba(255, 255, 255, 0) 45%),
-            radial-gradient(circle at ${gradPos1X}% ${gradPos1Y}%, rgba(255, 215, 0, 0.2) 0%, rgba(255, 215, 0, 0) 50%),
-            radial-gradient(circle at ${gradPos2X}% ${gradPos2Y}%, rgba(148, 0, 211, 0.2) 0%, rgba(148, 0, 211, 0) 50%)
-        `;
-        
-        // Change star color based on mouse position
-        if (this.sparkle) {
-            // Calculate colors based on mouse position
-            const hue = Math.floor(x * 360); // 0-360 based on X position
-            const saturation = 80 + Math.floor(y * 20); // 80-100% based on Y position
-            const lightness = 50 + Math.floor((x + y) / 2 * 20); // 50-70% based on combined position
-            
-            // Apply color to stars
-            this.sparkle.style.color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-            
-            // Add a glow effect that matches the star color
-            this.sparkle.style.filter = `drop-shadow(0 0 3px hsla(${hue}, ${saturation}%, ${lightness}%, 0.8))`;
-        }
-    }
-      destroy() {
-        // Properly remove event listeners by using stored function references
+    }    
+    destroy() {
+        // Remove event listeners
         this._activateCardHandler = this._activateCardHandler || (() => this.activateCard());
         this._deactivateCardHandler = this._deactivateCardHandler || (() => this.deactivateCard());
         this._moveCardHandler = this._moveCardHandler || ((e) => this.moveCard(e));
-        this._touchStartHandler = this._touchStartHandler || ((e) => { e.preventDefault(); this.activateCard(); });
-        this._touchEndHandler = this._touchEndHandler || (() => this.deactivateCard());
-        this._touchMoveHandler = this._touchMoveHandler || ((e) => {
-            if (e.touches.length > 0) {
-                e.preventDefault();
-                const touch = e.touches[0];
-                this.moveCard({
-                    type: 'touchmove',
-                    touches: e.touches,
-                    clientX: touch.clientX,
-                    clientY: touch.clientY
-                });
-            }
-        });
         
         this.card.removeEventListener('mouseenter', this._activateCardHandler);
         this.card.removeEventListener('mouseleave', this._deactivateCardHandler);
         this.card.removeEventListener('mousemove', this._moveCardHandler);
-        this.card.removeEventListener('touchstart', this._touchStartHandler);
-        this.card.removeEventListener('touchend', this._touchEndHandler);
-        this.card.removeEventListener('touchmove', this._touchMoveHandler);
+        
+        // Touch event listeners removed - no more click/touch activation
         
         // Cancel all animation frames
         if (this.animationFrameId) {
@@ -594,9 +470,9 @@ class HolographicEffect {
 
 // Card Factory for creating holographic cards
 class CardFactory {
-    static createCard(servantData, effectType = 'standard') {
+    static createCard(servantData, effectType = 'premium') {
         const card = document.createElement('div');
-        card.className = `card effect-${effectType}`;
+        card.className = `card effect-premium`;
         card.dataset.id = servantData.id;
         
         card.innerHTML = `

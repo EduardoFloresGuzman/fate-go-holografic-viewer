@@ -346,6 +346,238 @@
     display: none; /* Ensure sparkles stay hidden even when active */
 }
 
+/* Cosmos Holo Effect - Inspired by Pokemon CSS */
+.effect-cosmos .holo-overlay {
+    background: 
+        radial-gradient(
+            farthest-corner circle at calc(((var(--pointer-x)) * 0.5) + 25%) calc(((var(--pointer-y)) * 0.5) + 25%),
+            hsl(53, 65%, 60%) 10%,
+            hsl(93, 56%, 50%) 20%,
+            hsl(176, 54%, 49%) 30%,
+            hsl(228, 59%, 55%) 40%,
+            hsl(283, 60%, 55%) 50%,
+            hsl(326, 59%, 51%) 60%,
+            transparent 70%
+        ),
+        repeating-linear-gradient(
+            82deg,
+            hsl(53, 65%, 60%) 4%,
+            hsl(93, 56%, 50%) 8%,
+            hsl(176, 54%, 49%) 12%,
+            hsl(228, 59%, 55%) 16%,
+            hsl(283, 60%, 55%) 20%,
+            hsl(326, 59%, 51%) 24%,
+            hsl(53, 65%, 60%) 28%
+        );
+    background-size: 200% 200%, 400% 400%;
+    mix-blend-mode: color-dodge;
+    z-index: 10;
+    opacity: 0.3;
+    animation: cosmos-shift 12s ease-in-out infinite alternate;
+}
+
+.effect-cosmos .holo-sparkle {
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 255, 198, 0.3) 0%, transparent 50%);
+    background-size: 60% 60%, 80% 80%, 40% 40%;
+    mix-blend-mode: screen;
+    z-index: 11;
+    opacity: 0.4;
+    animation: cosmos-stars 8s ease-in-out infinite;
+}
+
+@keyframes cosmos-shift {
+    0%, 100% {
+        background-position: 0% 0%, 0% 0%;
+        filter: hue-rotate(0deg);
+    }
+    50% {
+        background-position: 100% 100%, 100% 100%;
+        filter: hue-rotate(90deg);
+    }
+}
+
+@keyframes cosmos-stars {
+    0%, 100% {
+        background-position: 0% 0%, 100% 100%, 50% 50%;
+        opacity: 0.4;
+    }
+    50% {
+        background-position: 100% 100%, 0% 0%, 25% 75%;
+        opacity: 0.7;
+    }
+}
+
+/* Rainbow Holo Effect - Inspired by Pokemon CSS */
+.effect-rainbow .holo-overlay {
+    background: 
+        linear-gradient(-30deg,
+            hsl(0, 57%, 37%) 0%,
+            hsl(40, 53%, 39%) 14%,
+            hsl(90, 60%, 35%) 28%,
+            hsl(180, 60%, 35%) 42%,
+            hsl(210, 57%, 39%) 56%,
+            hsl(280, 55%, 31%) 70%,
+            hsl(320, 55%, 35%) 84%,
+            hsl(0, 57%, 37%) 100%
+        ),
+        radial-gradient(
+            circle at 50% 50%,
+            rgba(255, 255, 255, 0.3) 0%,
+            rgba(255, 255, 255, 0.1) 50%,
+            transparent 70%
+        );
+    background-size: 400% 400%, 100% 100%;
+    background-position: 0% 0%, center;
+    mix-blend-mode: color-dodge;
+    z-index: 10;
+    opacity: 0.35;
+    animation: rainbow-shift 6s linear infinite;
+}
+
+.effect-rainbow .holo-sparkle {
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiIHZpZXdCb3g9IjAgMCA0IDQiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmYiIG9wYWNpdHk9IjAuOSIvPjxyZWN0IHg9IjIiIHk9IjIiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmYiIG9wYWNpdHk9IjAuOSIvPjwvc3ZnPg==');
+    background-size: 8px 8px;
+    mix-blend-mode: screen;
+    z-index: 11;
+    opacity: 0.6;
+    animation: glitter 3s ease-in-out infinite alternate;
+}
+
+@keyframes rainbow-shift {
+    0% {
+        background-position: 0% 0%, center;
+    }
+    100% {
+        background-position: 100% 100%, center;
+    }
+}
+
+@keyframes glitter {
+    0% {
+        background-position: 0% 0%;
+        opacity: 0.6;
+    }
+    100% {
+        background-position: 100% 100%;
+        opacity: 0.9;
+    }
+}
+
+/* Reverse Holo Effect - Inspired by Pokemon CSS */
+.effect-reverse .holo-overlay {
+    background: 
+        radial-gradient(
+            circle at var(--pointer-x) var(--pointer-y),
+            rgba(255, 255, 255, 0.8) 5%,
+            rgba(0, 0, 0, 0.3) 50%,
+            rgba(255, 255, 255, 0.6) 80%
+        ),
+        linear-gradient(
+            115deg,
+            transparent 25%,
+            rgba(255, 0, 150, 0.2) 45%,
+            rgba(0, 255, 255, 0.2) 55%,
+            transparent 75%
+        );
+    background-size: 100% 100%, 200% 200%;
+    mix-blend-mode: overlay;
+    z-index: 10;
+    opacity: 0.4;
+    animation: reverse-flow 8s ease-in-out infinite alternate;
+}
+
+@keyframes reverse-flow {
+    0% {
+        background-position: center, 0% 0%;
+        filter: brightness(1) contrast(1.2);
+    }
+    100% {
+        background-position: center, 100% 100%;
+        filter: brightness(1.2) contrast(1);
+    }
+}
+
+/* Secret Rare Effect - Inspired by Pokemon CSS */
+.effect-secret .holo-overlay {
+    background: 
+        conic-gradient(
+            from 0deg,
+            hsl(45, 90%, 50%) 0deg,
+            hsl(55, 90%, 60%) 60deg,
+            hsl(45, 90%, 70%) 120deg,
+            hsl(35, 90%, 60%) 180deg,
+            hsl(45, 90%, 50%) 240deg,
+            hsl(55, 90%, 40%) 300deg,
+            hsl(45, 90%, 50%) 360deg
+        ),
+        radial-gradient(
+            ellipse at center,
+            rgba(255, 215, 0, 0.4) 0%,
+            rgba(255, 223, 0, 0.2) 50%,
+            transparent 70%
+        );
+    background-size: 300% 300%, 100% 100%;
+    mix-blend-mode: color-dodge;
+    z-index: 10;
+    opacity: 0.5;
+    animation: gold-shine 5s ease-in-out infinite alternate;
+}
+
+.effect-secret .holo-sparkle {
+    background: 
+        radial-gradient(circle at 25% 25%, rgba(255, 223, 0, 0.8) 0%, transparent 20%),
+        radial-gradient(circle at 75% 75%, rgba(255, 215, 0, 0.6) 0%, transparent 20%),
+        radial-gradient(circle at 50% 80%, rgba(255, 200, 0, 0.7) 0%, transparent 25%);
+    background-size: 40% 40%, 60% 60%, 30% 30%;
+    mix-blend-mode: screen;
+    z-index: 11;
+    opacity: 0.7;
+    animation: gold-sparkle 4s ease-in-out infinite;
+}
+
+@keyframes gold-shine {
+    0%, 100% {
+        background-position: 0% 0%, center;
+        filter: brightness(1) saturate(1);
+    }
+    50% {
+        background-position: 100% 100%, center;
+        filter: brightness(1.3) saturate(1.5);
+    }
+}
+
+@keyframes gold-sparkle {
+    0%, 100% {
+        background-position: 0% 0%, 100% 100%, 50% 50%;
+        opacity: 0.7;
+    }
+    33% {
+        background-position: 100% 0%, 0% 100%, 25% 75%;
+        opacity: 0.9;
+    }
+    66% {
+        background-position: 0% 100%, 100% 0%, 75% 25%;
+        opacity: 0.8;
+    }
+}
+
+/* Enhanced interactive effects for new holographic types */
+.effect-cosmos.active .holo-overlay,
+.effect-rainbow.active .holo-overlay,
+.effect-reverse.active .holo-overlay,
+.effect-secret.active .holo-overlay {
+    opacity: 0.8;
+}
+
+.effect-cosmos.active .holo-sparkle,
+.effect-rainbow.active .holo-sparkle,
+.effect-secret.active .holo-sparkle {
+    opacity: 0.9;
+}
+
 /* Card info */
 .card-info {
     position: absolute;

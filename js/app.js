@@ -6,10 +6,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     // DOM elements
     const cardContainer = document.querySelector('.card-container');
     const effectSelector = document.getElementById('effect-select');
-    
-    // Application state
+      // Application state
     let servants = [];
-    let currentEffect = 'standard';
+    let currentEffect = 'premium';
     let cardElements = [];
     
     // Initialize the application
