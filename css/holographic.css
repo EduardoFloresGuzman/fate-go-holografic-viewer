@@ -6,8 +6,5 @@
 /* Import base styles and common elements */
 @import './effects/base.css';
 
-/* Import premium holo effect */
-@import './effects/premium.css';
-
 /* Import masked premium holo effect */
 @import './effects/masked-premium.css';

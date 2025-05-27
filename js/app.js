@@ -5,10 +5,9 @@
 document.addEventListener('DOMContentLoaded', async function() {
     // DOM elements
     const cardContainer = document.querySelector('.card-container');
-    const effectSelector = document.getElementById('effect-select');
-      // Application state
+    const effectSelector = document.getElementById('effect-select');    // Application state
     let servants = [];
-    let currentEffect = 'premium';
+    let currentEffect = 'masked-premium';
     let cardElements = [];
     
     // Initialize the application
