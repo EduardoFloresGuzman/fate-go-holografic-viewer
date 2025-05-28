@@ -288,6 +288,7 @@ class HolographicEffect {
       }
     }, HolographicEffect.CONFIG.CLEANUP.STYLE_REMOVAL_DELAY);
   }
+
   restartAnimations() {
     this.setManagedTimeout(() => {
       if (this.overlay) this.overlay.style.animation = "";
@@ -352,6 +353,7 @@ class HolographicEffect {
       }
     }, 500);
   }
+
   moveCard(e) {
     if (!this.card.classList.contains("active")) return;
 
@@ -432,6 +434,7 @@ class HolographicEffect {
       this.animationFrameId = null;
     }
   }
+
   updateCardTransform() {
     const rotate = this.springs.rotate.value;
     const glare = this.springs.glare.value;
@@ -454,6 +457,7 @@ class HolographicEffect {
 
     this.applyVisualEffects(glare, background);
   }
+
   applyVisualEffects(glare, background) {
     // Update CSS variables for effects that use them (like masked-secret-rare)
     const distanceFromCenter = MathHelpers.distanceFromCenter(glare.x, glare.y);
@@ -539,7 +543,7 @@ class CardFactory {
                     }" alt="${servantData.name}">
                     <div class="character-layer"></div>
                     <div class="holo-overlay"></div>
-                    <div class="holo-reflection"></div>
+                    <div class="holo-reflection"></div> Take a not of this!
                     <div class="holo-sparkle"></div>
                     <div class="holo-glow"></div>
                     <div class="card-info">
@@ -571,11 +575,10 @@ class CardFactory {
   }
 
   static async applyImageMasking(card, imageURL) {
-    // Process the image to create character and background masks
     const processedImage = await ImageProcessor.processCardImage(imageURL, {
-      threshold: 0.15,
-      blurRadius: 2,
-      dilateSize: 4,
+      threshold: 0.15, // Adjusted threshold for better masking
+      blurRadius: 2, // Increased blur radius for smoother edges
+      dilateSize: 3, // Increased dilate size for more pronounced masks
       featherEdge: 6,
     });
 

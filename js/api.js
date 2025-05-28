@@ -37,7 +37,7 @@ const fateAPI = (() => {
   // Get Servants from the API only
   const getServant = async () => {
     // Servant IDs we want to display
-    const servantIds = [90]; // Example IDs
+    const servantIds = [136]; // Example IDs
     const servants = [];
 
     // Try to fetch each Servant from the API
