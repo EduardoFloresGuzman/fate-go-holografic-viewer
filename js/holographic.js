@@ -126,14 +126,12 @@ class HolographicEffect {
             INTERACT: { stiffness: 0.066, damping: 0.25 },
             SNAP: { stiffness: 0.01, damping: 0.06 }
         }
-    };    constructor(card, effectType = 'premium') {
+    };    constructor(card, effectType = 'masked-premium') {
         this.card = card;
         this.inner = card.querySelector('.card-inner');
         this.overlay = card.querySelector('.holo-overlay');
         this.reflection = card.querySelector('.holo-reflection');
-        this.diffraction = card.querySelector('.holo-diffraction');
         this.glow = card.querySelector('.holo-glow');
-        this.sparkle = card.querySelector('.holo-sparkle');
         
         this.timeoutIds = [];
         
@@ -189,14 +187,14 @@ class HolographicEffect {
         document.head.appendChild(styleElement);
         
         return styleElement;
-    }      setEffectType(effectType) {
+    }    setEffectType(effectType) {
         this.resetElements();
         
         // Remove any existing effect classes
-        this.card.classList.remove('effect-premium');
+        this.card.classList.remove('effect-masked-premium');
         
-        // Always set to premium effect
-        this.card.classList.add('effect-premium');
+        // Set the correct effect class
+        this.card.classList.add(`effect-${effectType}`);
         
         this.restartAnimations();
     }
@@ -216,29 +214,16 @@ class HolographicEffect {
             this.overlay.style.backgroundPosition = '';
             this.triggerReflow([this.overlay]);
         }
-        
-        if (this.reflection) {
+          if (this.reflection) {
             this.reflection.style.animation = 'none';
             this.reflection.style.backgroundPosition = '0% 0%';
             this.triggerReflow([this.reflection]);
-        }
-        
-        if (this.diffraction) {
-            this.diffraction.style.animation = 'none';
-            this.triggerReflow([this.diffraction]);
         }
         
         if (this.glow) {
             this.glow.style.animation = 'none';
             this.glow.style.background = '';
             this.triggerReflow([this.glow]);
-        }
-        
-        if (this.sparkle) {
-            this.sparkle.style.animation = 'none';
-            this.sparkle.style.color = '';
-            this.sparkle.style.filter = '';
-            this.triggerReflow([this.sparkle]);
         }
         
         if (this.card) {
@@ -267,14 +252,11 @@ class HolographicEffect {
                 document.head.removeChild(cleanupStyle);
             }
         }, HolographicEffect.CONFIG.CLEANUP.STYLE_REMOVAL_DELAY);
-    }
-      restartAnimations() {
+    }    restartAnimations() {
         this.setManagedTimeout(() => {
             if (this.overlay) this.overlay.style.animation = '';
             if (this.reflection) this.reflection.style.animation = '';
-            if (this.diffraction) this.diffraction.style.animation = '';
             if (this.glow) this.glow.style.animation = '';
-            if (this.sparkle) this.sparkle.style.animation = '';
         }, HolographicEffect.CONFIG.CLEANUP.STYLE_REMOVAL_DELAY);
     }
     
@@ -469,8 +451,7 @@ class HolographicEffect {
 }
 
 // Card Factory for creating holographic cards
-class CardFactory {
-    static async createCard(servantData, effectType = 'premium') {
+class CardFactory {    static async createCard(servantData, effectType = 'masked-premium') {
         const card = document.createElement('div');
         card.className = `card effect-${effectType}`;
         card.dataset.id = servantData.id;
@@ -482,9 +463,7 @@ class CardFactory {
                     <img class="card-image" src="${servantData.imageURL}" alt="${servantData.name}">
                     <div class="character-layer"></div>
                     <div class="holo-overlay"></div>
-                    <div class="holo-sparkle"></div>
                     <div class="holo-reflection"></div>
-                    <div class="holo-diffraction"></div>
                     <div class="holo-glow"></div>
                     <div class="card-info">
                         <div class="card-name">${servantData.name}</div>
@@ -497,11 +476,10 @@ class CardFactory {
         // For masked effects, process the image
         if (effectType.includes('masked')) {
             try {
-                await this.applyImageMasking(card, servantData.imageURL);
-            } catch (error) {
+                await this.applyImageMasking(card, servantData.imageURL);            } catch (error) {
                 console.error('Error applying image masking:', error);
                 // Fallback to regular effect if masking fails
-                card.className = `card effect-premium`;
+                card.className = `card effect-masked-premium`;
             }
         }
         
