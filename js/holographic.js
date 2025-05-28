@@ -217,12 +217,11 @@ class HolographicEffect {
     return styleElement;
   }
   setEffectType(effectType) {
-    this.resetElements();
-
-    // Remove any existing effect classes
+    this.resetElements(); // Remove any existing effect classes
     this.card.classList.remove(
       "effect-masked-premium",
-      "effect-masked-secret-rare"
+      "effect-masked-secret-rare",
+      "effect-cosmos"
     );
 
     // Set the correct effect class
@@ -606,13 +605,6 @@ class CardFactory {
     const holoSparkle = card.querySelector(".holo-sparkle");
     const holoGlow = card.querySelector(".holo-glow");
 
-    console.log(
-      "Applying masks to card elements",
-      holoOverlay,
-      holoReflection,
-      holoSparkle,
-      holoGlow
-    );
     // Apply character mask to the character layer
     if (characterLayer) {
       // Character layer shows original image with character mask

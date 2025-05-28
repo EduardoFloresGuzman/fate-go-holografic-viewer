@@ -11,3 +11,6 @@
 
 /* Import secret rare holo effect */
 @import './effects/masked-secret-rare.css';
+
+/* Import cosmos holo effect */
+@import './effects/cosmos-holo.css';
