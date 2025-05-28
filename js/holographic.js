@@ -129,7 +129,6 @@ class HolographicEffect {
       SNAP: { stiffness: 0.01, damping: 0.06 },
     },
   };
-
   constructor(card, effectType = "masked-premium") {
     this.card = card;
     this.inner = card.querySelector(".card-inner");
@@ -138,6 +137,9 @@ class HolographicEffect {
     this.glow = card.querySelector(".holo-glow");
 
     this.timeoutIds = [];
+
+    // Initialize CSS variables for effects that use them
+    this.initializeCSSVariables();
 
     // Add overlay styles to ensure it doesn't block interactions
     this.ensureOverlayStyles();
@@ -160,9 +162,18 @@ class HolographicEffect {
     };
 
     this.animationFrameId = null;
-
     this.setupEventListeners();
   }
+
+  // Initialize CSS variables needed for certain effects
+  initializeCSSVariables() {
+    this.card.style.setProperty("--pointer-x", "50%");
+    this.card.style.setProperty("--pointer-y", "50%");
+    this.card.style.setProperty("--pointer-from-center", "0");
+    this.card.style.setProperty("--pointer-from-left", "0.5");
+    this.card.style.setProperty("--pointer-from-top", "0.5");
+  }
+
   ensureOverlayStyles() {
     // Add custom styles to ensure overlays don't block interactions
     const overlayStyle = this.ensureCleanupStyle(
@@ -209,7 +220,10 @@ class HolographicEffect {
     this.resetElements();
 
     // Remove any existing effect classes
-    this.card.classList.remove("effect-masked-premium");
+    this.card.classList.remove(
+      "effect-masked-premium",
+      "effect-masked-secret-rare"
+    );
 
     // Set the correct effect class
     this.card.classList.add(`effect-${effectType}`);
@@ -441,6 +455,14 @@ class HolographicEffect {
     this.applyVisualEffects(glare, background);
   }
   applyVisualEffects(glare, background) {
+    // Update CSS variables for effects that use them (like masked-secret-rare)
+    const distanceFromCenter = MathHelpers.distanceFromCenter(glare.x, glare.y);
+    this.card.style.setProperty("--pointer-x", `${glare.x}%`);
+    this.card.style.setProperty("--pointer-y", `${glare.y}%`);
+    this.card.style.setProperty("--pointer-from-center", distanceFromCenter);
+    this.card.style.setProperty("--pointer-from-left", glare.x / 100);
+    this.card.style.setProperty("--pointer-from-top", glare.y / 100);
+
     if (this.reflection) {
       const multiplier =
         HolographicEffect.CONFIG.REFLECTION.POSITION_MULTIPLIER;
@@ -450,10 +472,6 @@ class HolographicEffect {
     }
 
     if (this.glow) {
-      const distanceFromCenter = MathHelpers.distanceFromCenter(
-        glare.x,
-        glare.y
-      );
       const glowSize =
         HolographicEffect.CONFIG.GLOW.BASE_SIZE +
         distanceFromCenter * HolographicEffect.CONFIG.GLOW.MAX_SIZE_INCREASE;
@@ -512,9 +530,7 @@ class CardFactory {
   static async createCard(servantData, effectType = "masked-premium") {
     const card = document.createElement("div");
     card.className = `card effect-${effectType}`;
-    card.dataset.id = servantData.id;
-
-    // Create base card structure
+    card.dataset.id = servantData.id; // Create base card structure
     card.innerHTML = `
             <div class="card-inner">
                 <div class="card-face">
@@ -524,6 +540,7 @@ class CardFactory {
                     <div class="character-layer"></div>
                     <div class="holo-overlay"></div>
                     <div class="holo-reflection"></div>
+                    <div class="holo-sparkle"></div>
                     <div class="holo-glow"></div>
                     <div class="card-info">
                         <div class="card-name">${servantData.name}</div>
@@ -579,18 +596,18 @@ class CardFactory {
       backgroundMask,
       dimensions.width,
       dimensions.height
-    );
-
-    // Apply masks to respective elements
+    ); // Apply masks to respective elements
     const characterLayer = card.querySelector(".character-layer");
     const holoOverlay = card.querySelector(".holo-overlay");
     const holoReflection = card.querySelector(".holo-reflection");
+    const holoSparkle = card.querySelector(".holo-sparkle");
     const holoGlow = card.querySelector(".holo-glow");
 
     console.log(
       "Applying masks to card elements",
       holoOverlay,
       holoReflection,
+      holoSparkle,
       holoGlow
     );
     // Apply character mask to the character layer
@@ -599,10 +616,8 @@ class CardFactory {
       characterLayer.style.backgroundImage = `url(${imageURL})`;
       characterLayer.style.webkitMaskImage = `url(${characterMaskURL})`;
       characterLayer.style.maskImage = `url(${characterMaskURL})`;
-    }
-
-    // Apply background mask to holographic effects
-    [holoOverlay, holoReflection, holoGlow].forEach((element) => {
+    } // Apply background mask to holographic effects
+    [holoOverlay, holoReflection, holoSparkle, holoGlow].forEach((element) => {
       if (element) {
         element.style.webkitMaskImage = `url(${backgroundMaskURL})`;
         element.style.maskImage = `url(${backgroundMaskURL})`;

@@ -37,7 +37,7 @@ const fateAPI = (() => {
   // Get Servants from the API only
   const getServant = async () => {
     // Servant IDs we want to display
-    const servantIds = [86]; // Example IDs
+    const servantIds = [90]; // Example IDs
     const servants = [];
 
     // Try to fetch each Servant from the API
@@ -46,14 +46,14 @@ const fateAPI = (() => {
         const servantData = await fetchServantData(servantId);
         console.log(servantData); // Debugging line to check the fetched data
         console.log(servantData.id); // Debugging line to check the Servant ID
-        
+
         // Only add Servants that were successfully fetched from the API
         if (servantData) {
           servants.push({
             id: servantData.id,
             name: servantData.name,
             rarity: servantData.rarity,
-            imageURL: getServantURLImg(servantData.id, "b", version = 2),
+            imageURL: getServantURLImg(servantData.id, "b", (version = 2)),
             effect:
               servantData.skills && servantData.skills[0]
                 ? servantData.skills[0].detail
