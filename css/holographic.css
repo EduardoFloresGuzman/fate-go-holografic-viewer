@@ -8,3 +8,6 @@
 
 /* Import masked premium holo effect */
 @import './effects/masked-premium.css';
+
+/* Import secret rare holo effect */
+@import './effects/masked-secret-rare.css';
