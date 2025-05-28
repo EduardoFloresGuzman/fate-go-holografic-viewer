@@ -578,7 +578,7 @@ class CardFactory {
     const processedImage = await ImageProcessor.processCardImage(imageURL, {
       threshold: 0.15, // Adjusted threshold for better masking
       blurRadius: 2, // Increased blur radius for smoother edges
-      dilateSize: 3, // Increased dilate size for more pronounced masks
+      dilateSize: 4, // Increased dilate size for more pronounced masks
       featherEdge: 6,
     });
 
