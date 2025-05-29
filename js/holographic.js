@@ -6,8 +6,7 @@
 /**
  * Simple spring physics implementation for smooth animations
  */
-class Spring {
-  constructor(initialValue = { x: 0, y: 0 }, config = {}) {
+class Spring {  constructor(initialValue = { x: 0, y: 0 }, config = {}) {
     this.value = { ...initialValue };
     this.target = { ...initialValue };
     this.config = {
@@ -15,10 +14,15 @@ class Spring {
       damping: config.damping || 0.25,
       precision: config.precision || 0.01,
     };
-    this.velocity = { x: 0, y: 0 };
+    
+    // Initialize velocity for all properties dynamically
+    this.velocity = {};
+    Object.keys(initialValue).forEach(key => {
+      this.velocity[key] = 0;
+    });
+    
     this.animating = false;
   }
-
   set(targetValue, options = {}) {
     const soft = options.soft !== false;
     const hard = options.hard === true;
@@ -26,12 +30,24 @@ class Spring {
     if (hard) {
       this.value = { ...targetValue };
       this.target = { ...targetValue };
-      this.velocity = { x: 0, y: 0 };
+      
+      // Reset velocity for all properties
+      Object.keys(targetValue).forEach(key => {
+        this.velocity[key] = 0;
+      });
+      
       this.animating = false;
       return;
     }
 
     this.target = { ...targetValue };
+
+    // Ensure velocity exists for new properties
+    Object.keys(targetValue).forEach(key => {
+      if (!(key in this.velocity)) {
+        this.velocity[key] = 0;
+      }
+    });
 
     if (!this.animating && soft) {
       this.animating = true;
@@ -97,20 +113,18 @@ class HolographicEffect {
     ROTATION: {
       MAX_ANGLE: 26,
       INNER_FACTOR: -0.1,
-    },
-    PERSPECTIVE: {
-      DEFAULT: 1500,
-      ACTIVE: 1800,
+    },    PERSPECTIVE: {
+      DEFAULT: 1200,
+      ACTIVE: 1400,
     },
     SCALE: {
       DEFAULT: 1.0,
-      ACTIVE: 1.03,
-    },
-    TRANSITION: {
-      DEFAULT: "transform 0.2s cubic-bezier(0.13, 0.53, 0.38, 0.97)",
-      SPRING: "transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-      INNER_SPRING: "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.175)",
-      BACKGROUND: "background-position 0.1s ease-out",
+      ACTIVE: 1.02,
+    },    TRANSITION: {
+      DEFAULT: "transform 0.15s cubic-bezier(0.23, 1, 0.32, 1)",
+      SPRING: "transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+      INNER_SPRING: "transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.175)",
+      BACKGROUND: "background-position 0.08s ease-out",
     },
     REFLECTION: {
       POSITION_MULTIPLIER: 400,
@@ -123,10 +137,9 @@ class HolographicEffect {
     CLEANUP: {
       GALAXY_DELAY: 100,
       STYLE_REMOVAL_DELAY: 50,
-    },
-    SPRING: {
-      INTERACT: { stiffness: 0.066, damping: 0.25 },
-      SNAP: { stiffness: 0.01, damping: 0.06 },
+    },    SPRING: {
+      INTERACT: { stiffness: 0.066, damping: 0.25 }, // Smooth and natural
+      SNAP: { stiffness: 0.01, damping: 0.06 }, // Gentle return to neutral
     },
     MOBILE: {
       // Simplified effects for mobile devices
@@ -204,12 +217,11 @@ class HolographicEffect {
             }
         `
     );
-  }
-  setupEventListeners() {
+  }  setupEventListeners() {
     // Enhanced debouncing for better mobile performance
     let moveTimeout;
     let lastMoveTime = 0;
-    const moveThrottle = this.isMobile ? 16 : 8; // ~60fps desktop, ~30fps mobile
+    const moveThrottle = this.isMobile ? 12 : 6; // ~83fps desktop, ~50fps mobile
 
     const handlePointerMove = (e) => {
       const now = performance.now();
@@ -386,9 +398,7 @@ class HolographicEffect {
 
     this.springs.rotate.set({ x: 0, y: 0 });
     this.springs.glare.set({ x: 50, y: 50, o: 0 });
-    this.springs.background.set({ x: 50, y: 50 });
-
-    this.card.style.transition = HolographicEffect.CONFIG.TRANSITION.SPRING;
+    this.springs.background.set({ x: 50, y: 50 });    this.card.style.transition = HolographicEffect.CONFIG.TRANSITION.SPRING;
     this.card.style.transform = `perspective(${HolographicEffect.CONFIG.PERSPECTIVE.DEFAULT}px) rotateY(0) rotateX(0) scale(${HolographicEffect.CONFIG.SCALE.DEFAULT})`;
 
     if (this.inner) {
@@ -398,29 +408,26 @@ class HolographicEffect {
     }
 
     if (this.reflection) {
-      this.reflection.style.transition = "background-position 0.4s ease-out";
-      this.reflection.style.backgroundPosition = "0% 0%";
+      this.reflection.style.transition = "background-position 0.5s ease-out";
+      this.reflection.style.backgroundPosition = "50% 50%";
     }
 
     if (!this.animationFrameId) {
       this.animateCard();
-    }
-
-    this.setManagedTimeout(() => {
+    }    this.setManagedTimeout(() => {
       this.card.style.transition = HolographicEffect.CONFIG.TRANSITION.DEFAULT;
 
       if (this.inner) {
         this.inner.style.transition =
-          "transform 0.15s cubic-bezier(0.13, 0.53, 0.38, 0.97)";
+          "transform 0.12s cubic-bezier(0.23, 1, 0.32, 1)";
       }
 
       if (this.reflection) {
         this.reflection.style.transition =
           HolographicEffect.CONFIG.TRANSITION.BACKGROUND;
       }
-    }, 500);
+    }, 600);
   }
-
   moveCard(e) {
     if (!this.card.classList.contains("active")) return;
 
@@ -428,41 +435,54 @@ class HolographicEffect {
 
     let mouseX, mouseY;
 
-    if (e.type === "touchmove") {
-      mouseX = e.clientX - rect.left;
-      mouseY = e.clientY - rect.top;
+    // Fix touch event handling
+    if (e.type === "touchmove" && e.touches && e.touches.length > 0) {
+      mouseX = e.touches[0].clientX - rect.left;
+      mouseY = e.touches[0].clientY - rect.top;
     } else {
       mouseX = e.clientX - rect.left;
       mouseY = e.clientY - rect.top;
     }
 
     mouseX = MathHelpers.clamp(mouseX, 0, rect.width);
-    mouseY = MathHelpers.clamp(mouseY, 0, rect.height);
-
-    const percentX = MathHelpers.round((mouseX / rect.width) * 100);
+    mouseY = MathHelpers.clamp(mouseY, 0, rect.height);    const percentX = MathHelpers.round((mouseX / rect.width) * 100);
     const percentY = MathHelpers.round((mouseY / rect.height) * 100);
 
-    const centerX = percentX - 50;
-    const centerY = percentY - 50;
+    // Improved center calculation for more natural rotation
+    const centerX = (percentX - 50) / 50; // Normalize to -1 to 1
+    const centerY = (percentY - 50) / 50; // Normalize to -1 to 1
+    
+    // Calculate distance from center for intensity scaling
+    const distanceFromCenter = Math.sqrt(centerX * centerX + centerY * centerY);
+    const intensityScale = Math.min(distanceFromCenter * 0.8, 1); // Softer intensity curve
 
-    this.updateSprings(
+    // More natural rotation mapping with easing
+    const maxRotation = this.isMobile ? 
+      HolographicEffect.CONFIG.ROTATION.MAX_ANGLE * 0.5 : // Moderate for mobile
+      HolographicEffect.CONFIG.ROTATION.MAX_ANGLE * 0.7;  // More for desktop
+    
+    // Apply easing function for smoother rotation
+    const easeRotationX = centerY * -1 * maxRotation * Math.pow(intensityScale, 0.8);
+    const easeRotationY = centerX * maxRotation * Math.pow(intensityScale, 0.8);
+
+    const rotateX = MathHelpers.clamp(easeRotationX, -maxRotation, maxRotation);
+    const rotateY = MathHelpers.clamp(easeRotationY, -maxRotation, maxRotation);    this.updateSprings(
       {
-        x: MathHelpers.adjust(percentX, 0, 100, 35, 65),
-        y: MathHelpers.adjust(percentY, 0, 100, 35, 65),
+        x: MathHelpers.adjust(percentX, 0, 100, 25, 75),
+        y: MathHelpers.adjust(percentY, 0, 100, 25, 75),
       },
       {
-        x: MathHelpers.round(-(centerY / 2.5)),
-        y: MathHelpers.round(centerX / 3),
+        x: MathHelpers.round(rotateX, 100),
+        y: MathHelpers.round(rotateY, 100),
       },
       {
         x: percentX,
         y: percentY,
-        o: 1,
+        o: Math.min(distanceFromCenter, 1),
       }
     );
 
-    this.updateCardTransform();
-
+    // Don't call updateCardTransform here - let the animation loop handle it
     if (!this.animationFrameId) {
       this.animateCard();
     }
@@ -504,19 +524,17 @@ class HolographicEffect {
   updateCardTransform() {
     const rotate = this.springs.rotate.value;
     const glare = this.springs.glare.value;
-    const background = this.springs.background.value;
-
-    // Simplified transforms for mobile devices
+    const background = this.springs.background.value;    // Simplified transforms for mobile devices
     if (this.isMobile) {
-      // Reduce rotation angles and disable scale for better performance
-      const mobileRotateX = rotate.x * 0.5; // 50% reduction
-      const mobileRotateY = rotate.y * 0.5;
+      // Moderate rotation reduction for mobile (75% instead of 50%)
+      const mobileRotateX = rotate.x * 0.75;
+      const mobileRotateY = rotate.y * 0.75;
 
       this.card.style.transform = `
         perspective(${HolographicEffect.CONFIG.PERSPECTIVE.ACTIVE}px)
         rotateX(${mobileRotateX}deg)
         rotateY(${mobileRotateY}deg)
-        scale(1.0)
+        scale(1.01)
       `;
 
       if (this.inner) {

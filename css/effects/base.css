@@ -18,7 +18,7 @@
     --pointer-from-left: 0.5;
     --rotate-x: 0deg;
     --rotate-y: 0deg;
-    transition: transform 0.2s cubic-bezier(0.13, 0.53, 0.38, 0.97);
+    transition: transform 0.15s cubic-bezier(0.23, 1, 0.32, 1);
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
     cursor: default;
     user-select: none;
@@ -51,7 +51,7 @@
     backface-visibility: hidden;
     /* Use CSS variables for rotation - this will be set by JavaScript */
     transform: rotateY(var(--rotate-x)) rotateX(var(--rotate-y)) translateZ(0);
-    transition: transform 0.15s cubic-bezier(0.13, 0.53, 0.38, 0.97);
+    transition: transform 0.12s cubic-bezier(0.23, 1, 0.32, 1);
     /* Enhanced GPU acceleration hints */
     will-change: transform;
     -webkit-transform: rotateY(var(--rotate-x)) rotateX(var(--rotate-y)) translateZ(0);
