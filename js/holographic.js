@@ -128,7 +128,24 @@ class HolographicEffect {
       INTERACT: { stiffness: 0.066, damping: 0.25 },
       SNAP: { stiffness: 0.01, damping: 0.06 },
     },
+    MOBILE: {
+      // Simplified effects for mobile devices
+      REDUCED_COMPLEXITY: true,
+      LOWER_FRAME_RATE: 30, // Target 30fps instead of 60fps
+      SIMPLIFIED_GRADIENTS: true,
+    },
   };
+
+  // Detect mobile device
+  static isMobileDevice() {
+    return (
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      ) ||
+      (window.innerWidth <= 768 && "ontouchstart" in window)
+    );
+  }
+
   constructor(card, effectType = "masked-premium") {
     this.card = card;
     this.inner = card.querySelector(".card-inner");
@@ -137,6 +154,9 @@ class HolographicEffect {
     this.glow = card.querySelector(".holo-glow");
 
     this.timeoutIds = [];
+    this.isMobile = HolographicEffect.isMobileDevice();
+    this.lastFrameTime = 0;
+    this.targetFrameTime = this.isMobile ? 1000 / 30 : 1000 / 60; // 30fps on mobile, 60fps on desktop
 
     // Initialize CSS variables for effects that use them
     this.initializeCSSVariables();
@@ -186,11 +206,58 @@ class HolographicEffect {
     );
   }
   setupEventListeners() {
-    this.card.addEventListener("mouseenter", () => this.activateCard());
-    this.card.addEventListener("mouseleave", () => this.deactivateCard());
-    this.card.addEventListener("mousemove", (e) => this.moveCard(e));
+    // Enhanced debouncing for better mobile performance
+    let moveTimeout;
+    let lastMoveTime = 0;
+    const moveThrottle = this.isMobile ? 16 : 8; // ~60fps desktop, ~30fps mobile
 
-    // Touch events removed - no more click/touch activation
+    const handlePointerMove = (e) => {
+      const now = performance.now();
+
+      // Throttle based on device capability
+      if (now - lastMoveTime < moveThrottle) {
+        return;
+      }
+
+      // Cancel previous timeout
+      if (moveTimeout) {
+        cancelAnimationFrame(moveTimeout);
+      }
+
+      lastMoveTime = now;
+
+      // Schedule next update with frame timing
+      moveTimeout = requestAnimationFrame(() => {
+        this.moveCard(e);
+      });
+    };
+
+    const handlePointerEnter = () => this.activateCard();
+    const handlePointerLeave = () => {
+      // Clear any pending movement updates
+      if (moveTimeout) {
+        cancelAnimationFrame(moveTimeout);
+      }
+      this.deactivateCard();
+    };
+
+    // Use passive listeners for better scroll performance
+    this.card.addEventListener("pointermove", handlePointerMove, {
+      passive: true,
+    });
+    this.card.addEventListener("pointerenter", handlePointerEnter, {
+      passive: true,
+    });
+    this.card.addEventListener("pointerleave", handlePointerLeave, {
+      passive: true,
+    });
+
+    // Store listeners for cleanup
+    this.eventListeners = {
+      pointermove: handlePointerMove,
+      pointerenter: handlePointerEnter,
+      pointerleave: handlePointerLeave,
+    };
   }
 
   setManagedTimeout(callback, delay) {
@@ -433,30 +500,51 @@ class HolographicEffect {
       this.animationFrameId = null;
     }
   }
-
   updateCardTransform() {
     const rotate = this.springs.rotate.value;
     const glare = this.springs.glare.value;
     const background = this.springs.background.value;
 
-    this.card.style.transform = `
+    // Simplified transforms for mobile devices
+    if (this.isMobile) {
+      // Reduce rotation angles and disable scale for better performance
+      const mobileRotateX = rotate.x * 0.5; // 50% reduction
+      const mobileRotateY = rotate.y * 0.5;
+
+      this.card.style.transform = `
+        perspective(${HolographicEffect.CONFIG.PERSPECTIVE.ACTIVE}px)
+        rotateX(${mobileRotateX}deg)
+        rotateY(${mobileRotateY}deg)
+        scale(1.0)
+      `;
+
+      if (this.inner) {
+        const innerFactorX =
+          mobileRotateX * HolographicEffect.CONFIG.ROTATION.INNER_FACTOR;
+        const innerFactorY =
+          mobileRotateY * HolographicEffect.CONFIG.ROTATION.INNER_FACTOR;
+        this.inner.style.transform = `rotateX(${innerFactorX}deg) rotateY(${innerFactorY}deg)`;
+      }
+    } else {
+      // Full effects for desktop
+      this.card.style.transform = `
             perspective(${HolographicEffect.CONFIG.PERSPECTIVE.ACTIVE}px)
             rotateX(${rotate.x}deg)
             rotateY(${rotate.y}deg)
             scale(${HolographicEffect.CONFIG.SCALE.ACTIVE})
         `;
 
-    if (this.inner) {
-      const innerFactorX =
-        rotate.x * HolographicEffect.CONFIG.ROTATION.INNER_FACTOR;
-      const innerFactorY =
-        rotate.y * HolographicEffect.CONFIG.ROTATION.INNER_FACTOR;
-      this.inner.style.transform = `rotateX(${innerFactorX}deg) rotateY(${innerFactorY}deg)`;
+      if (this.inner) {
+        const innerFactorX =
+          rotate.x * HolographicEffect.CONFIG.ROTATION.INNER_FACTOR;
+        const innerFactorY =
+          rotate.y * HolographicEffect.CONFIG.ROTATION.INNER_FACTOR;
+        this.inner.style.transform = `rotateX(${innerFactorX}deg) rotateY(${innerFactorY}deg)`;
+      }
     }
 
     this.applyVisualEffects(glare, background);
   }
-
   applyVisualEffects(glare, background) {
     // Update CSS variables for effects that use them (like masked-secret-rare)
     const distanceFromCenter = MathHelpers.distanceFromCenter(glare.x, glare.y);
@@ -466,39 +554,65 @@ class HolographicEffect {
     this.card.style.setProperty("--pointer-from-left", glare.x / 100);
     this.card.style.setProperty("--pointer-from-top", glare.y / 100);
 
-    if (this.reflection) {
-      const multiplier =
-        HolographicEffect.CONFIG.REFLECTION.POSITION_MULTIPLIER;
-      const posX = background.x * (multiplier / 100);
-      const posY = background.y * (multiplier / 100);
-      this.reflection.style.backgroundPosition = `${posX}% ${posY}%`;
-    }
+    // Simplified effects for mobile devices
+    if (this.isMobile) {
+      // Reduce reflection complexity on mobile
+      if (this.reflection) {
+        const multiplier =
+          HolographicEffect.CONFIG.REFLECTION.POSITION_MULTIPLIER * 0.5; // Reduce intensity
+        const posX = background.x * (multiplier / 100);
+        const posY = background.y * (multiplier / 100);
+        this.reflection.style.backgroundPosition = `${posX}% ${posY}%`;
+      }
 
-    if (this.glow) {
-      const glowSize =
-        HolographicEffect.CONFIG.GLOW.BASE_SIZE +
-        distanceFromCenter * HolographicEffect.CONFIG.GLOW.MAX_SIZE_INCREASE;
+      // Simplify glow effect on mobile
+      if (this.glow) {
+        const glowSize = HolographicEffect.CONFIG.GLOW.BASE_SIZE; // Fixed size, no animation
+        this.glow.style.background = `radial-gradient(
+          circle at ${glare.x}% ${glare.y}%, 
+          rgba(255, 255, 255, 0.3) 0%, 
+          rgba(255, 255, 255, 0) ${glowSize}%
+        )`;
+      }
+    } else {
+      // Full effects for desktop
+      if (this.reflection) {
+        const multiplier =
+          HolographicEffect.CONFIG.REFLECTION.POSITION_MULTIPLIER;
+        const posX = background.x * (multiplier / 100);
+        const posY = background.y * (multiplier / 100);
+        this.reflection.style.backgroundPosition = `${posX}% ${posY}%`;
+      }
 
-      this.glow.style.background = `radial-gradient(
-                circle at ${glare.x}% ${glare.y}%, 
-                rgba(255, 255, 255, ${0.6 + distanceFromCenter * 0.4}) 0%, 
-                rgba(255, 255, 255, 0) ${glowSize}%
-            )`;
+      if (this.glow) {
+        const glowSize =
+          HolographicEffect.CONFIG.GLOW.BASE_SIZE +
+          distanceFromCenter * HolographicEffect.CONFIG.GLOW.MAX_SIZE_INCREASE;
+
+        this.glow.style.background = `radial-gradient(
+          circle at ${glare.x}% ${glare.y}%, 
+          rgba(255, 255, 255, ${0.6 + distanceFromCenter * 0.4}) 0%, 
+          rgba(255, 255, 255, 0) ${glowSize}%
+        )`;
+      }
     }
   }
   destroy() {
-    // Remove event listeners
-    this._activateCardHandler =
-      this._activateCardHandler || (() => this.activateCard());
-    this._deactivateCardHandler =
-      this._deactivateCardHandler || (() => this.deactivateCard());
-    this._moveCardHandler = this._moveCardHandler || ((e) => this.moveCard(e));
-
-    this.card.removeEventListener("mouseenter", this._activateCardHandler);
-    this.card.removeEventListener("mouseleave", this._deactivateCardHandler);
-    this.card.removeEventListener("mousemove", this._moveCardHandler);
-
-    // Touch event listeners removed - no more click/touch activation
+    // Remove event listeners properly
+    if (this.eventListeners) {
+      this.card.removeEventListener(
+        "pointermove",
+        this.eventListeners.pointermove
+      );
+      this.card.removeEventListener(
+        "pointerenter",
+        this.eventListeners.pointerenter
+      );
+      this.card.removeEventListener(
+        "pointerleave",
+        this.eventListeners.pointerleave
+      );
+    }
 
     // Cancel all animation frames
     if (this.animationFrameId) {
@@ -525,6 +639,7 @@ class HolographicEffect {
 
     // Clear references
     this.springs = null;
+    this.eventListeners = null;
   }
 }
 

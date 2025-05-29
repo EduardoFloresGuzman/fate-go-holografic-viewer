@@ -14,3 +14,39 @@
 
 /* Import cosmos holo effect */
 @import './effects/cosmos-holo.css';
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px), (hover: none) {
+  .card {
+    /* Disable expensive effects on mobile */
+    animation: none !important;
+    transition: transform 0.3s ease !important;
+  }
+  
+  .card:hover {
+    transition: transform 0.3s ease !important;
+  }
+  
+  .holo-overlay,
+  .holo-sparkle,
+  .holo-reflection,
+  .holo-glow {
+    /* Simplify transitions on mobile */
+    transition: opacity 0.2s ease-out !important;
+    /* Reduce will-change to save memory */
+    will-change: opacity !important;
+  }
+  
+  /* Disable complex background animations on mobile */
+  .card-inner::before,
+  .card-inner::after {
+    animation: none !important;
+    background-attachment: scroll !important; /* Prevent parallax on mobile */
+  }
+  
+  /* Reduce ambient pulse intensity on mobile */
+  @keyframes ambient-pulse {
+    0%, 100% { box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); }
+    50% { box-shadow: 0 5px 25px rgba(0, 0, 0, 0.25); }
+  }
+}

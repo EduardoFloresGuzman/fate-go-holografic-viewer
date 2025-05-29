@@ -3,13 +3,40 @@
  * Enables selective holographic effects on card backgrounds only
  */
 
-class ImageProcessor {    static async processCardImage(imageUrl, options = {}) {
+class ImageProcessor {
+    // Cache for processed images to avoid reprocessing
+    static cache = new Map();
+    static maxCacheSize = 50; // Limit cache size to prevent memory issues
+    
+    // Generate cache key from URL and options
+    static getCacheKey(imageUrl, options) {
+        const optionsStr = JSON.stringify(options);
+        return `${imageUrl}_${optionsStr}`;
+    }
+    
+    // Clean cache when it gets too large
+    static cleanCache() {
+        if (this.cache.size >= this.maxCacheSize) {
+            // Remove oldest entries (first 10)
+            const entries = Array.from(this.cache.keys());
+            for (let i = 0; i < 10; i++) {
+                this.cache.delete(entries[i]);
+            }
+        }
+    }    static async processCardImage(imageUrl, options = {}) {
         const {
             threshold = 0.3,           // Lower threshold for smoother detection
             blurRadius = 4,            // More blur for smoother edges
             dilateSize = 2,            // Smaller dilation to avoid patches
             featherEdge = 8            // More feathering for smooth transitions
         } = options;
+
+        // Check cache first
+        const cacheKey = this.getCacheKey(imageUrl, options);
+        if (this.cache.has(cacheKey)) {
+            console.log('Using cached processed image for:', imageUrl);
+            return this.cache.get(cacheKey);
+        }
 
         try {
             // Load image
@@ -38,13 +65,20 @@ class ImageProcessor {    static async processCardImage(imageUrl, options = {}) 
             // Create background mask (inverse of character mask)
             const backgroundMask = this.invertMask(characterMask);
             
-            return {
+            const result = {
                 originalImage: img,
                 characterMask,
                 backgroundMask,
                 canvas,
                 dimensions: { width: img.width, height: img.height }
             };
+            
+            // Cache the result
+            this.cleanCache(); // Clean cache if needed
+            this.cache.set(cacheKey, result);
+            console.log('Cached processed image for:', imageUrl);
+            
+            return result;
             
         } catch (error) {
             console.error('Error processing card image:', error);
@@ -282,5 +316,20 @@ class ImageProcessor {    static async processCardImage(imageUrl, options = {}) 
         
         ctx.putImageData(imageData, 0, 0);
         return canvas.toDataURL();
+    }
+    
+    // Static method to clear cache when needed (e.g., on memory pressure)
+    static clearCache() {
+        this.cache.clear();
+        console.log('Image processing cache cleared');
+    }
+    
+    // Get cache statistics for debugging
+    static getCacheStats() {
+        return {
+            size: this.cache.size,
+            maxSize: this.maxCacheSize,
+            keys: Array.from(this.cache.keys())
+        };
     }
 }
