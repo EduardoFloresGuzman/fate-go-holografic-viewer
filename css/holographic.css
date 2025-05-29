@@ -4,16 +4,16 @@
 */
 
 /* Import base styles and common elements */
-@import './effects/base.css';
+@import "./effects/base.css";
 
 /* Import masked premium holo effect */
-@import './effects/masked-premium.css';
-
-/* Import secret rare holo effect */
-@import './effects/masked-secret-rare.css';
+@import "./effects/masked-premium.css";
 
 /* Import cosmos holo effect */
-@import './effects/cosmos-holo.css';
+@import "./effects/cosmos-holo.css";
+
+/* Import masked rainbow holo effect */
+@import "./effects/masked-rainbow.css";
 
 /* Mobile-specific optimizations */
 @media (max-width: 768px), (hover: none) {
@@ -22,11 +22,11 @@
     animation: none !important;
     transition: transform 0.3s ease !important;
   }
-  
+
   .card:hover {
     transition: transform 0.3s ease !important;
   }
-  
+
   .holo-overlay,
   .holo-sparkle,
   .holo-reflection,
@@ -36,17 +36,22 @@
     /* Reduce will-change to save memory */
     will-change: opacity !important;
   }
-  
+
   /* Disable complex background animations on mobile */
   .card-inner::before,
   .card-inner::after {
     animation: none !important;
     background-attachment: scroll !important; /* Prevent parallax on mobile */
   }
-  
+
   /* Reduce ambient pulse intensity on mobile */
   @keyframes ambient-pulse {
-    0%, 100% { box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); }
-    50% { box-shadow: 0 5px 25px rgba(0, 0, 0, 0.25); }
+    0%,
+    100% {
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    }
+    50% {
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.25);
+    }
   }
 }

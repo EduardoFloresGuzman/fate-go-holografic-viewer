@@ -283,11 +283,12 @@ class HolographicEffect {
 
     return styleElement;
   }
+
   setEffectType(effectType) {
     this.resetElements(); // Remove any existing effect classes
     this.card.classList.remove(
       "effect-masked-premium",
-      "effect-masked-secret-rare",
+      "effect-masked-rainbow",
       "effect-cosmos"
     );
 
@@ -659,6 +660,7 @@ class CardFactory {
                     <div class="holo-overlay"></div>
                     <div class="holo-reflection"></div> Take a not of this!
                     <div class="holo-sparkle"></div>
+                    <div class="holo-diffraction"></div>
                     <div class="holo-glow"></div>
                     <div class="card-info">
                         <div class="card-name">${servantData.name}</div>
@@ -690,7 +692,7 @@ class CardFactory {
 
   static async applyImageMasking(card, imageURL) {
     const processedImage = await ImageProcessor.processCardImage(imageURL, {
-      threshold: 0.15, // Adjusted threshold for better masking
+      threshold: 0.2, // Adjusted threshold for better masking
       blurRadius: 2, // Increased blur radius for smoother edges
       dilateSize: 4, // Increased dilate size for more pronounced masks
       featherEdge: 6,
