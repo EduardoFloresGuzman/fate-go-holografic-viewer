@@ -38,7 +38,7 @@ const fateAPI = (() => {
   const getServant = async () => {
     // Servant IDs we want to display
     // 224
-    const servantIds = [2,11,12,17,23,31,39,47]; // Example IDs
+    const servantIds = [383]; // Example IDs
     const servants = [];
 
     // Try to fetch each Servant from the API
@@ -95,6 +95,32 @@ const fateAPI = (() => {
       return [];
     }
   };
+  // Get a random Servant from the API
+  const getRandomServant = async () => {
+    // Generate random ID from 1 to 383
+    const randomId = Math.floor(Math.random() * 383) + 1;
+    
+    try {
+      const servantData = await fetchServantData(randomId);
+      
+      if (servantData) {
+        return {
+          id: servantData.id,
+          name: servantData.name,
+          rarity: servantData.rarity,
+          imageURL: getServantURLImg(servantData.id, "b", 2),
+          effect:
+            servantData.skills && servantData.skills[0]
+              ? servantData.skills[0].detail
+              : "No effect data",
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error(`Error fetching random Servant ${randomId}:`, error);
+      return null;
+    }
+  };
 
   // Return public methods
   return {
@@ -102,5 +128,6 @@ const fateAPI = (() => {
     fetchServantData,
     getServantURLImg,
     searchServants,
+    getRandomServant,
   };
 })();

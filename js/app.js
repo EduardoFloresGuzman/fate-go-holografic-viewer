@@ -5,7 +5,8 @@
 document.addEventListener('DOMContentLoaded', async function() {
     // DOM elements
     const cardContainer = document.querySelector('.card-container');
-    const effectSelector = document.getElementById('effect-select');    // Application state
+    const effectSelector = document.getElementById('effect-select');
+    const findServantBtn = document.getElementById('find-servant-btn');// Application state
     let servants = [];
     let currentEffect = 'masked-premium';
     let cardElements = [];
@@ -32,10 +33,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             // Render all cards
             renderCards();
-            
-            // Add event listener to the effect selector
+              // Add event listener to the effect selector
             if (effectSelector) {
                 effectSelector.addEventListener('change', handleEffectChange);
+            }
+            
+            // Add event listener to the find servant button
+            if (findServantBtn) {
+                findServantBtn.addEventListener('click', handleFindServant);
             }
             
         } catch (error) {
@@ -82,6 +87,26 @@ document.addEventListener('DOMContentLoaded', async function() {
                     card.holoEffect.setEffectType(currentEffect);
                 }
             });
+        }    };
+    
+    // Handle finding a random servant
+    const handleFindServant = async () => {
+        // Show loading indicator
+        cardContainer.innerHTML = '<div class="loading">Finding your servant...</div>';
+        
+        try {
+            const randomServant = await fateAPI.getRandomServant();
+            
+            if (randomServant) {
+                // Replace current servants with the random one
+                servants = [randomServant];
+                await renderCards();
+            } else {
+                showError('Failed to find a servant. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error finding random servant:', error);
+            showError('Failed to find a servant. Please try again.');
         }
     };
     
